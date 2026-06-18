@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titulo %}Reavaliações — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('admin.index') }}">Voltar à administração</a>
+  <div class="section-head">
+    <h1>Reavaliações</h1>
+    <form method="post" action="{{ url_for('admin.reavaliacoes_notificar') }}" data-confirm="Enviar notificação por e-mail aos colaboradores pendentes?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary" type="submit">Notificar pendentes</button>
+    </form>
+  </div>
+  <p class="muted">Situação da certificação dos colaboradores. Priorize vencidos e sem certificado.</p>
+</div>
+<div class="card">
+  {% set rotulos = {'vencido':'vencido','sem_certificado':'sem certificado','vencendo':'vence em breve','em_dia':'em dia'} %}
+  <table class="tabela">
+    <thead><tr><th>Colaborador</th><th>Setor</th><th>Situação</th><th>Validade</th></tr></thead>
+    <tbody>
+      {% for r in linhas %}
+      <tr>
+        <td>{{ r.usuario.nome }}</td>
+        <td>{{ r.setor.nome if r.setor else '—' }}</td>
+        <td class="st-{{ r.status }}">{{ rotulos.get(r.status, r.status) }}{% if r.status == 'vencendo' and r.dias is not none %} ({{ r.dias }} dias){% endif %}</td>
+        <td>{{ r.valido_ate.strftime('%d/%m/%Y') if r.valido_ate else '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="muted">Nenhum colaborador cadastrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

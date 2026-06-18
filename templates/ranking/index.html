@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}Ranking — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <div class="section-head">
+    <h1>Ranking de conformidade</h1>
+    <span class="cert-acoes">
+      <a class="btn btn-ghost" href="{{ url_for('ranking.exportar_xlsx') }}" style="border-color:var(--borda);color:var(--primaria);">Excel</a>
+      <a class="btn btn-primary" href="{{ url_for('ranking.relatorio_pdf') }}">Relatório PDF</a>
+    </span>
+  </div>
+  <p class="muted">Setores ordenados por percentual de colaboradores em dia e média das avaliações.</p>
+</div>
+
+<div class="card">
+  <table class="tabela tabela-ranking">
+    <thead>
+      <tr><th>#</th><th>Setor</th><th>Área</th><th>Colaboradores</th><th>Avaliados</th><th>Em dia</th><th>Média</th></tr>
+    </thead>
+    <tbody>
+      {% for linha in linhas %}
+      <tr class="{{ 'linha-destaque' if linha.setor.id == setor_atual else '' }}">
+        <td class="pos">{{ linha.posicao }}</td>
+        <td>{{ linha.setor.nome }}{% if linha.setor.id == setor_atual %} <span class="tag">seu setor</span>{% endif %}</td>
+        <td>{{ linha.setor.area_label }}</td>
+        <td>{{ linha.n }}</td>
+        <td>{{ linha.avaliados }}</td>
+        <td><span class="pill {{ 'pill-ok' if linha.pct_em_dia >= 70 else 'pill-alerta' }}">{{ linha.pct_em_dia }}%</span></td>
+        <td>{{ linha.media if linha.media is not none else '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="muted">Nenhum setor cadastrado ainda.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

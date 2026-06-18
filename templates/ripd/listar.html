@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}RIPD — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <div class="section-head">
+    <h1>RIPD — Relatórios de impacto</h1>
+    <a class="btn btn-primary" href="{{ url_for('ripd.form') }}">Novo RIPD</a>
+  </div>
+  <p class="muted">Avaliação de impacto e risco dos tratamentos (Art. 38).</p>
+</div>
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Título</th><th>Risco inerente</th><th>Risco residual</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for r in relatorios %}
+      <tr>
+        <td>{{ r.titulo }}</td>
+        <td>{{ r.risco_inerente_nivel }}</td>
+        <td>{{ r.risco_residual_label }}</td>
+        <td>{% if r.status == 'concluido' %}<span class="pill pill-ok">concluído</span>{% else %}<span class="pill">rascunho</span>{% endif %}</td>
+        <td class="acoes-linha">
+          <a href="{{ url_for('ripd.form', rid=r.id) }}">Editar</a>
+          <a href="{{ url_for('ripd.pdf', rid=r.id) }}">PDF</a>
+          <form method="post" action="{{ url_for('ripd.excluir', rid=r.id) }}" data-confirm="Excluir este RIPD?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="link-excluir" type="submit">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted">Nenhum RIPD ainda.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

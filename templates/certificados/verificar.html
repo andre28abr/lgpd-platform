@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verificação de certificado — Plataforma LGPD</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+<main class="container">
+  <div class="login-wrap">
+    <div class="card login-card">
+      <div class="login-head">
+        <span class="brand-mark brand-mark-lg">LGPD</span>
+        <h1>Verificação de certificado</h1>
+      </div>
+      {% if cert %}
+        <div class="verif-box {{ 'res-ok' if cert.valido else 'res-falha' }}">
+          {% if cert.valido %}<p class="pill pill-ok">Certificado válido</p>
+          {% else %}<p class="pill pill-alerta">Certificado vencido</p>{% endif %}
+        </div>
+        <ul class="verif-dados">
+          <li><span>Titular</span><strong>{{ cert.usuario.nome }}</strong></li>
+          <li><span>Empresa</span><strong>{{ cert.usuario.empresa.nome }}</strong></li>
+          <li><span>Área</span><strong>{{ cert.area_label }}</strong></li>
+          <li><span>Aproveitamento</span><strong>{{ cert.nota|round|int }}%</strong></li>
+          <li><span>Emitido em</span><strong>{{ cert.emitido_em.strftime('%d/%m/%Y') }}</strong></li>
+          <li><span>Válido até</span><strong>{{ cert.valido_ate.strftime('%d/%m/%Y') }}</strong></li>
+          <li><span>Código</span><strong>{{ cert.codigo }}</strong></li>
+        </ul>
+      {% else %}
+        <div class="verif-box res-falha">
+          <p class="pill pill-alerta">Código não encontrado</p>
+        </div>
+        <p class="muted">Nenhum certificado corresponde ao código <code>{{ codigo }}</code>.</p>
+      {% endif %}
+    </div>
+  </div>
+</main>
+</body>
+</html>

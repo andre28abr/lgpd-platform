@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block titulo %}Avaliações — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Avaliações</h1>
+  <p class="muted">Cada prova é montada por sorteio — as questões e a ordem mudam a cada tentativa.</p>
+</div>
+
+<div class="card">
+  <h3>Iniciar nova avaliação</h3>
+  <form method="post" action="{{ url_for('provas.iniciar') }}" class="form-inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if area_padrao %}
+      <input type="hidden" name="area" value="{{ area_padrao }}">
+      <span class="muted">Área: <strong>{{ AREA_LABELS.get(area_padrao, area_padrao) }}</strong></span>
+    {% else %}
+      <label class="campo">
+        <span>Área</span>
+        <select name="area" required>
+          {% for code, label in areas %}<option value="{{ code }}">{{ label }}</option>{% endfor %}
+        </select>
+      </label>
+    {% endif %}
+    <button class="btn btn-primary" type="submit">Iniciar</button>
+  </form>
+</div>
+
+<div class="section-head"><h2>Histórico</h2></div>
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Data</th><th>Área</th><th>Nota</th><th>Resultado</th><th></th></tr></thead>
+    <tbody>
+      {% for p in historico %}
+      <tr>
+        <td>{{ p.criado_em.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ p.area_label }}</td>
+        <td>{{ p.nota if p.nota is not none else '—' }}</td>
+        <td>
+          {% if p.status != 'concluida' %}<span class="pill">em andamento</span>
+          {% elif p.aprovado %}<span class="pill pill-ok">aprovado</span>
+          {% else %}<span class="pill pill-alerta">reprovado</span>{% endif %}
+        </td>
+        <td>
+          {% if p.status == 'concluida' %}<a href="{{ url_for('provas.resultado', prova_id=p.id) }}">Ver</a>
+          {% else %}<a href="{{ url_for('provas.realizar', prova_id=p.id) }}">Continuar</a>{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted">Nenhuma avaliação realizada ainda.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

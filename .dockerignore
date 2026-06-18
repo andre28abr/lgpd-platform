@@ -1,0 +1,17 @@
+.venv/
+venv/
+instance/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+# .env NÃO entra na imagem: em container o banco vem da DATABASE_URL do ambiente
+.env
+*.db
+*.sqlite*
+logs/
+.pytest_cache/
+.DS_Store
+tests/
+README.md
+INICIAR-MAC.command

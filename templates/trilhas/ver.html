@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titulo %}{{ trilha.titulo }} — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('trilhas.listar') }}">Voltar às trilhas</a>
+  <h1>{{ trilha.titulo }}</h1>
+  <p class="muted">{{ trilha.area_label }}</p>
+</div>
+
+<article class="card conteudo-md">
+  {{ trilha.conteudo_md | markdown }}
+</article>
+
+<div class="acoes-fim">
+  <form method="post" action="{{ url_for('provas.iniciar') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="area" value="{{ trilha.area }}">
+    <button class="btn btn-primary" type="submit">Fazer a avaliação desta área</button>
+  </form>
+</div>
+{% endblock %}

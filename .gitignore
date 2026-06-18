@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Configuração local / segredos
+.env
+
+# Banco SQLite e arquivos de instância
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs e temporários
+logs/
+*.log
+.DS_Store
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block titulo %}ROPA — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <div class="section-head">
+    <h1>ROPA — Registro de tratamentos</h1>
+    <a class="btn btn-primary" href="{{ url_for('ropa.form') }}">Novo registro</a>
+  </div>
+  <p class="muted">Inventário das operações de tratamento de dados pessoais (Art. 37).</p>
+</div>
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Atividade</th><th>Setor</th><th>Base legal</th><th>Titulares</th><th></th></tr></thead>
+    <tbody>
+      {% for r in registros %}
+      <tr>
+        <td>{{ r.atividade }}</td>
+        <td>{{ r.setor_label }}</td>
+        <td>{{ r.base_legal_label }}</td>
+        <td>{{ r.titulares or '—' }}</td>
+        <td class="acoes-linha">
+          <a href="{{ url_for('ropa.form', reg_id=r.id) }}">Editar</a>
+          <form method="post" action="{{ url_for('ropa.excluir', reg_id=r.id) }}" data-confirm="Excluir este registro?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="link-excluir" type="submit">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted">Nenhum registro ainda. Comece mapeando uma atividade de tratamento.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

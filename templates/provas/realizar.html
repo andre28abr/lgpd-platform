@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Avaliação — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Avaliação de {{ prova.area_label }}</h1>
+  <p class="muted">{{ prova.total_questoes }} questões. Nota de corte: {{ prova.nota_corte }}%.</p>
+</div>
+
+<div class="prova-barra"><div id="prova-progresso" class="prova-barra-fill"></div></div>
+<p class="muted" id="prova-contagem"></p>
+{% if restante is not none %}<p class="muted">Tempo restante: <strong id="prova-timer">--:--</strong></p>{% endif %}
+
+<form method="post" action="{{ url_for('provas.responder', prova_id=prova.id) }}" data-prova data-total="{{ prova.total_questoes }}"{% if restante is not none %} data-segundos="{{ restante }}"{% endif %}>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% for item in prova.itens %}
+  <div class="card questao">
+    <p class="questao-num">Questão {{ loop.index }}</p>
+    <p class="questao-enunciado">{{ item.questao.enunciado }}</p>
+    <div class="alternativas">
+      {% for alt in item.alternativas_ordenadas() %}
+      <label class="alternativa">
+        <input type="radio" name="questao_{{ item.id }}" value="{{ alt.id }}" required>
+        <span>{{ alt.texto }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="acoes-fim">
+    <button class="btn btn-primary btn-grande" type="submit">Enviar respostas</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/prova.js') }}"></script>
+{% endblock %}

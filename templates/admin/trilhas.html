@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block titulo %}Trilhas (admin) — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('admin.index') }}">Voltar à administração</a>
+  <div class="section-head">
+    <h1>Trilhas da empresa</h1>
+    <a class="btn btn-primary" href="{{ url_for('admin.trilha_form') }}">Nova trilha</a>
+  </div>
+</div>
+
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Título</th><th>Área</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for t in proprias %}
+      <tr>
+        <td>{{ t.titulo }}</td>
+        <td>{{ t.area_label }}</td>
+        <td>{% if t.publicada %}<span class="pill pill-ok">publicada</span>{% else %}<span class="pill">rascunho</span>{% endif %}</td>
+        <td class="acoes-linha">
+          <a href="{{ url_for('admin.trilha_form', trilha_id=t.id) }}">Editar</a>
+          <form method="post" action="{{ url_for('admin.trilha_excluir', trilha_id=t.id) }}" data-confirm="Excluir a trilha '{{ t.titulo }}'?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="link-excluir" type="submit">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="muted">Nenhuma trilha própria. A biblioteca global abaixo já está disponível para todos.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="section-head"><h2>Biblioteca global (somente leitura)</h2></div>
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Título</th><th>Área</th></tr></thead>
+    <tbody>
+      {% for t in globais %}
+      <tr><td>{{ t.titulo }}</td><td>{{ t.area_label }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

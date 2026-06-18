@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}Códigos de recuperação — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Códigos de recuperação</h1>
+  <p class="muted">Guarde-os em local seguro. Cada código serve uma única vez e substitui o app autenticador caso você perca o acesso.</p>
+</div>
+<div class="card">
+  <ul class="codigos-lista">
+    {% for c in codigos %}<li><code>{{ c }}</code></li>{% endfor %}
+  </ul>
+  <p class="muted">Esta é a única vez que eles serão exibidos.</p>
+  <a class="btn btn-primary" href="{{ url_for('perfil.index') }}">Entendi, voltar ao perfil</a>
+</div>
+{% endblock %}

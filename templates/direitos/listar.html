@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titulo %}Direitos do titular — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <div class="section-head">
+    <h1>Direitos do titular</h1>
+    <a class="btn btn-primary" href="{{ url_for('direitos.novo') }}">Registrar pedido</a>
+  </div>
+  <p class="muted">Atendimento aos pedidos dos titulares (Art. 18), com prazo e status.</p>
+</div>
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Titular</th><th>Tipo</th><th>Status</th><th>Prazo</th><th></th></tr></thead>
+    <tbody>
+      {% for p in pedidos %}
+      <tr>
+        <td>{{ p.nome_titular }}</td>
+        <td>{{ p.tipo_label }}</td>
+        <td>
+          {% if p.status == 'concluido' %}<span class="pill pill-ok">{{ p.status_label }}</span>
+          {% elif p.atrasado %}<span class="pill pill-alerta">{{ p.status_label }} (atrasado)</span>
+          {% else %}<span class="pill">{{ p.status_label }}</span>{% endif %}
+        </td>
+        <td>{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '—' }}</td>
+        <td><a href="{{ url_for('direitos.gerir', pid=p.id) }}">Gerir</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted">Nenhum pedido registrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

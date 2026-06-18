@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Início — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Olá, {{ current_user.nome.split(' ')[0] }}</h1>
+  <p class="muted">
+    {% if current_user.setor %}Setor {{ current_user.setor.nome }} — {{ current_user.setor.area_label }}{% else %}Sem setor atribuído{% endif %}
+  </p>
+</div>
+
+<div class="grid grid-2">
+  <div class="card status-card">
+    <h3>Situação do seu certificado</h3>
+    {% if cert %}
+      <p class="pill pill-ok">Válido até {{ cert.valido_ate.strftime('%d/%m/%Y') }}</p>
+      <p class="muted">Faltam {{ cert.dias_para_vencer }} dias para a reavaliação.</p>
+      <a class="btn btn-ghost" href="{{ url_for('certificados.listar') }}">Ver certificado</a>
+    {% else %}
+      <p class="pill pill-alerta">Pendente</p>
+      <p class="muted">Você ainda não tem um certificado válido para a sua área.</p>
+    {% endif %}
+  </div>
+
+  <div class="card status-card">
+    <h3>Avaliação</h3>
+    {% if ultima %}
+      <p class="muted">Última nota: <strong>{{ ultima.nota }}%</strong>
+        — {{ 'aprovado' if ultima.aprovado else 'não atingiu a nota de corte' }}.</p>
+    {% else %}
+      <p class="muted">Você ainda não realizou nenhuma avaliação.</p>
+    {% endif %}
+    <form method="post" action="{{ url_for('provas.iniciar') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary" type="submit">Iniciar avaliação</button>
+    </form>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <a class="card card-link" href="{{ url_for('trilhas.listar') }}"><h3>Trilhas de treinamento</h3><p class="muted">Estude o conteúdo da sua área antes da prova.</p></a>
+  <a class="card card-link" href="{{ url_for('provas.index') }}"><h3>Minhas avaliações</h3><p class="muted">Histórico e novas provas.</p></a>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block titulo %}Auditoria — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('admin.index') }}">Voltar à administração</a>
+  <div class="section-head">
+    <h1>Trilha de auditoria</h1>
+    <a class="btn btn-ghost" href="{{ url_for('admin.auditoria_csv') }}" style="border-color:var(--borda);color:var(--primaria);">Exportar CSV</a>
+  </div>
+  <p class="muted">Ações sensíveis registradas (accountability — Art. 6º, X). {{ total }} registros.</p>
+</div>
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Quando</th><th>Usuário</th><th>Ação</th><th>Detalhe</th><th>IP</th></tr></thead>
+    <tbody>
+      {% for l in logs %}
+      <tr>
+        <td>{{ l.criado_em.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ l.usuario.nome if l.usuario else '—' }}</td>
+        <td><code>{{ l.acao }}</code></td>
+        <td>{{ l.detalhe or '—' }}</td>
+        <td>{{ l.ip or '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted">Nenhum registro ainda.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if pagina > 1 or tem_proxima %}
+<div class="section-head">
+  <span class="muted">Página {{ pagina }}</span>
+  <span class="cert-acoes">
+    {% if pagina > 1 %}<a class="btn btn-ghost" href="{{ url_for('admin.auditoria', pagina=pagina-1) }}" style="border-color:var(--borda);color:var(--primaria);">Anterior</a>{% endif %}
+    {% if tem_proxima %}<a class="btn btn-ghost" href="{{ url_for('admin.auditoria', pagina=pagina+1) }}" style="border-color:var(--borda);color:var(--primaria);">Próxima</a>{% endif %}
+  </span>
+</div>
+{% endif %}
+{% endblock %}

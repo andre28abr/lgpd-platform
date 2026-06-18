@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titulo %}Legislação — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Legislação e referências</h1>
+  <p class="muted">Acompanhe a lei e as publicações da ANPD.</p>
+</div>
+
+{% if itens %}
+<div class="section-head"><h2>Últimas do feed</h2></div>
+<div class="card">
+  <ul class="lista-feed">
+    {% for it in itens %}
+    <li><a href="{{ it.link }}" target="_blank" rel="noopener noreferrer">{{ it.titulo }}</a>{% if it.data %} <span class="muted">— {{ it.data }}</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% elif feed_url %}
+<div class="card"><p class="muted">{{ erro or 'O feed não retornou itens.' }}</p></div>
+{% endif %}
+
+<div class="section-head"><h2>Referências</h2></div>
+<div class="card">
+  <ul class="lista-feed">
+    {% for nome, link in referencias %}
+    <li><a href="{{ link }}" target="_blank" rel="noopener noreferrer">{{ nome }}</a></li>
+    {% endfor %}
+  </ul>
+  {% if not feed_url %}<p class="muted">Defina <code>FEED_URL</code> (RSS) para puxar notícias automaticamente.</p>{% endif %}
+</div>
+{% endblock %}

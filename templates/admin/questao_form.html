@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar' if questao else 'Nova' }} questão — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+{% set alts = questao.alternativas if questao else [] %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('admin.questoes') }}">Voltar às questões</a>
+  <h1>{{ 'Editar questão' if questao else 'Nova questão' }}</h1>
+</div>
+
+<div class="card">
+  <form method="post" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="campo"><span>Enunciado</span><textarea name="enunciado" rows="3" required>{{ questao.enunciado if questao else '' }}</textarea></label>
+    <div class="form-row">
+      <label class="campo">
+        <span>Área</span>
+        <select name="area" required>
+          {% for code, label in areas %}<option value="{{ code }}" {% if questao and questao.area == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="campo"><span>Artigo</span><input type="text" name="artigo" value="{{ questao.artigo if questao else '' }}" placeholder="Art. 7º"></label>
+      <label class="campo">
+        <span>Dificuldade</span>
+        <select name="dificuldade">
+          {% for d in [1,2,3] %}<option value="{{ d }}" {% if questao and questao.dificuldade == d %}selected{% endif %}>{{ d }}</option>{% endfor %}
+        </select>
+      </label>
+    </div>
+
+    <fieldset class="alts-edit">
+      <legend>Alternativas (marque a correta)</legend>
+      {% for i in range(4) %}
+      <div class="alt-edit-row">
+        <input type="radio" name="correta" value="{{ i }}" {% if alts|length > i and alts[i].correta %}checked{% endif %}>
+        <input type="text" name="alt_{{ i }}" value="{{ alts[i].texto if alts|length > i else '' }}" placeholder="Alternativa {{ i + 1 }}{% if i < 2 %} (obrigatória){% endif %}">
+      </div>
+      {% endfor %}
+    </fieldset>
+
+    <label class="campo"><span>Explicação (mostrada na correção)</span><textarea name="explicacao" rows="2">{{ questao.explicacao if questao else '' }}</textarea></label>
+    <button class="btn btn-primary" type="submit">Salvar questão</button>
+  </form>
+</div>
+{% endblock %}

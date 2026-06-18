@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titulo %}Configurações — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('admin.index') }}">Voltar à administração</a>
+  <h1>Configurações</h1>
+  <p class="muted">{{ empresa.nome }}</p>
+</div>
+<div class="card">
+  <h3>Segurança</h3>
+  <form method="post" action="{{ url_for('admin.configuracoes') }}" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="campo-check">
+      <input type="checkbox" name="mfa_obrigatorio" {% if empresa.mfa_obrigatorio %}checked{% endif %}>
+      Exigir verificação em duas etapas (2FA) de todos os usuários
+    </label>
+    <p class="muted">Quando ativo, ao entrar, quem ainda não configurou o 2FA é direcionado para ativá-lo antes de usar a plataforma.</p>
+    <button class="btn btn-primary" type="submit">Salvar</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+# Sobe a plataforma com PostgreSQL em um comando: docker compose up --build
+# Acesse http://localhost:8080  (login demo: dpo@acme.com.br / lgpd1234)
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lgpd
+      POSTGRES_PASSWORD: lgpd
+      POSTGRES_DB: lgpd
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lgpd"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://lgpd:lgpd@db:5432/lgpd
+      RATELIMIT_STORAGE_URI: redis://redis:6379
+      SECRET_KEY: ${SECRET_KEY:-troque-esta-chave-em-producao}
+      SESSION_COOKIE_SECURE: "false"
+      SEED_DEMO: "1"
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:

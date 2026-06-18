@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titulo %}Pedido do titular — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('direitos.listar') }}">Voltar aos direitos</a>
+  <h1>{{ pedido.tipo_label }}</h1>
+  <p class="muted">Titular: {{ pedido.nome_titular }}{% if pedido.contato %} — {{ pedido.contato }}{% endif %}</p>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Detalhes</h3>
+    <p class="muted">Recebido em {{ pedido.criado_em.strftime('%d/%m/%Y') }}.</p>
+    <p class="muted">Prazo: <strong{% if pedido.atrasado %} class="st-vencido"{% endif %}>{{ pedido.prazo.strftime('%d/%m/%Y') if pedido.prazo else '—' }}</strong>{% if pedido.dias_para_prazo is not none and pedido.status not in ('concluido','recusado') %} ({{ pedido.dias_para_prazo }} dias){% endif %}</p>
+    {% if pedido.descricao %}<p>{{ pedido.descricao }}</p>{% endif %}
+  </div>
+  <div class="card">
+    <h3>Atendimento</h3>
+    <form method="post" class="form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="campo">
+        <span>Status</span>
+        <select name="status">
+          {% for code, label in status_opcoes %}<option value="{{ code }}" {% if pedido.status == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="campo">
+        <span>Responsável</span>
+        <select name="responsavel_id">
+          <option value="">— ninguém —</option>
+          {% for u in usuarios %}<option value="{{ u.id }}" {% if pedido.responsavel_id == u.id %}selected{% endif %}>{{ u.nome }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="campo"><span>Observações</span><textarea name="observacoes" rows="3">{{ pedido.observacoes or '' }}</textarea></label>
+      <button class="btn btn-primary" type="submit">Salvar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

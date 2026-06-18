@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titulo %}Certificados — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Meus certificados</h1>
+  <p class="muted">Cada certificado tem validade e um código público de verificação.</p>
+</div>
+
+<div class="grid grid-2">
+  {% for cert in certificados %}
+  <div class="card cert-card {{ 'cert-valido' if cert.valido else 'cert-vencido' }}">
+    <div class="cert-head">
+      <h3>{{ cert.area_label }}</h3>
+      {% if cert.valido %}<span class="pill pill-ok">válido</span>{% else %}<span class="pill pill-alerta">vencido</span>{% endif %}
+    </div>
+    <p class="muted">Aproveitamento: <strong>{{ cert.nota|round|int }}%</strong></p>
+    <p class="muted">Emitido em {{ cert.emitido_em.strftime('%d/%m/%Y') }} — válido até {{ cert.valido_ate.strftime('%d/%m/%Y') }}</p>
+    <p class="muted">Código: <code>{{ cert.codigo }}</code></p>
+    <div class="cert-acoes">
+      <a class="btn btn-primary" href="{{ url_for('certificados.pdf', cert_id=cert.id) }}">Baixar PDF</a>
+      <a class="btn btn-ghost" href="{{ url_for('certificados.verificar', codigo=cert.codigo) }}">Verificar</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="card"><p class="muted">Você ainda não possui certificados. Conclua uma avaliação com aproveitamento mínimo para emitir o primeiro.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

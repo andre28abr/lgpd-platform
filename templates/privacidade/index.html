@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}Privacidade — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Gestão de privacidade</h1>
+  <p class="muted">Módulos de operação da LGPD no dia a dia.</p>
+</div>
+<div class="grid grid-3">
+  <a class="card card-link" href="{{ url_for('diagnostico.index') }}"><h3>Diagnóstico</h3><p class="muted">{{ c.diagnosticos }} realizado(s). Maturidade em privacidade.</p></a>
+  <a class="card card-link" href="{{ url_for('ropa.listar') }}"><h3>ROPA</h3><p class="muted">{{ c.ropa }} registro(s). Operações de tratamento (Art. 37).</p></a>
+  <a class="card card-link" href="{{ url_for('ripd.listar') }}"><h3>RIPD</h3><p class="muted">{{ c.ripd }} relatório(s). Impacto e risco (Art. 38).</p></a>
+  <a class="card card-link" href="{{ url_for('direitos.listar') }}"><h3>Direitos do titular</h3><p class="muted">{{ c.direitos }} pedido(s). Art. 18.</p></a>
+  <a class="card card-link" href="{{ url_for('incidentes.listar') }}"><h3>Incidentes</h3><p class="muted">{{ c.incidentes }} registrado(s). Resposta a incidentes (Art. 48).</p></a>
+  <a class="card card-link" href="{{ url_for('legislacao.index') }}"><h3>Legislação</h3><p class="muted">Lei, ANPD e referências.</p></a>
+</div>
+{% endblock %}

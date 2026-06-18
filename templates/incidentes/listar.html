@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}Incidentes — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <div class="section-head">
+    <h1>Incidentes de segurança</h1>
+    <a class="btn btn-primary" href="{{ url_for('incidentes.novo') }}">Registrar incidente</a>
+  </div>
+  <p class="muted">Registro e resposta a incidentes, com comunicação à ANPD e aos titulares (Art. 48).</p>
+</div>
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Incidente</th><th>Ocorrido</th><th>Risco</th><th>ANPD</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for i in incidentes %}
+      <tr>
+        <td>{{ i.titulo }}</td>
+        <td>{{ i.ocorrido_em.strftime('%d/%m/%Y') if i.ocorrido_em else '—' }}</td>
+        <td>{{ i.risco_label }}</td>
+        <td>{% if i.comunicado_anpd %}<span class="pill pill-ok">sim</span>{% else %}<span class="pill">não</span>{% endif %}</td>
+        <td>{% if i.status == 'encerrado' %}<span class="pill pill-ok">{{ i.status_label }}</span>{% else %}<span class="pill">{{ i.status_label }}</span>{% endif %}</td>
+        <td><a href="{{ url_for('incidentes.gerir', iid=i.id) }}">Gerir</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">Nenhum incidente registrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

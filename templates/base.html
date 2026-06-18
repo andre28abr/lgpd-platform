@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Plataforma LGPD{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+{% if current_user.is_authenticated %}
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="{{ url_for('painel.index') }}">
+      <span class="brand-mark">LGPD</span>
+      <span class="brand-text">Plataforma</span>
+    </a>
+    <nav class="nav">
+      <a href="{{ url_for('painel.index') }}">Início</a>
+      <a href="{{ url_for('trilhas.listar') }}">Trilhas</a>
+      <a href="{{ url_for('provas.index') }}">Avaliações</a>
+      <a href="{{ url_for('certificados.listar') }}">Certificados</a>
+      {% if current_user.is_encarregado or current_user.is_gestor %}
+      <a href="{{ url_for('ranking.index') }}">Ranking</a>
+      <a href="{{ url_for('privacidade.index') }}">Privacidade</a>
+      {% endif %}
+      {% if current_user.is_encarregado %}
+      <a href="{{ url_for('admin.index') }}">Administração</a>
+      {% endif %}
+    </nav>
+    <div class="user-box">
+      <a class="user-meta" href="{{ url_for('perfil.index') }}">
+        <span class="user-name">{{ current_user.nome }}</span>
+        <span class="user-role">{{ current_user.papel_label }}</span>
+      </a>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-ghost" type="submit">Sair</button>
+      </form>
+    </div>
+  </div>
+</header>
+{% endif %}
+
+<main class="container">
+  {% with mensagens = get_flashed_messages(with_categories=true) %}
+    {% if mensagens %}
+      <div class="flashes">
+        {% for categoria, texto in mensagens %}
+          <div class="flash flash-{{ categoria }}">{{ texto }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block conteudo %}{% endblock %}
+</main>
+
+<footer class="rodape">
+  <span>Plataforma LGPD — treinamento, avaliação e certificação de conformidade.</span>
+  <span> · <a href="{{ url_for('publico.politica') }}">Política de privacidade</a></span>
+</footer>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

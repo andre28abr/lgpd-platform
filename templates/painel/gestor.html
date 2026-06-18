@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titulo %}Painel do Gestor — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Painel do Gestor</h1>
+  <p class="muted">{{ setor.nome if setor else 'Sem setor atribuído' }}{% if setor %} — {{ setor.area_label }}{% endif %}</p>
+</div>
+
+{% if resumo %}
+<div class="grid grid-3">
+  <div class="card metric">
+    <span class="metric-num">{{ resumo.pct_em_dia }}%</span>
+    <span class="metric-lbl">Colaboradores em dia</span>
+  </div>
+  <div class="card metric">
+    <span class="metric-num">{{ resumo.n }}</span>
+    <span class="metric-lbl">Colaboradores</span>
+  </div>
+  <div class="card metric">
+    <span class="metric-num">{{ resumo.media if resumo.media is not none else '—' }}</span>
+    <span class="metric-lbl">Média da última avaliação</span>
+  </div>
+</div>
+<div class="grid grid-3">
+  <a class="card card-link" href="{{ url_for('ranking.index') }}"><h3>Ranking</h3><p class="muted">Compare com os demais setores.</p></a>
+  <a class="card card-link" href="{{ url_for('trilhas.listar') }}"><h3>Trilhas</h3><p class="muted">Conteúdo da sua área.</p></a>
+  <a class="card card-link" href="{{ url_for('provas.index') }}"><h3>Avaliações</h3><p class="muted">Faça e acompanhe provas.</p></a>
+</div>
+{% else %}
+<div class="card"><p class="muted">Você ainda não está vinculado a um setor. Peça ao Encarregado para atribuir um.</p></div>
+{% endif %}
+{% endblock %}

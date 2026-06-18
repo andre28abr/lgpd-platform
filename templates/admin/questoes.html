@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}Questões (admin) — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('admin.index') }}">Voltar à administração</a>
+  <div class="section-head">
+    <h1>Banco de questões da empresa</h1>
+    <a class="btn btn-primary" href="{{ url_for('admin.questao_form') }}">Nova questão</a>
+  </div>
+  <p class="muted">Estas questões entram no sorteio das provas, junto com a biblioteca curada global.</p>
+</div>
+
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Área</th><th>Enunciado</th><th>Artigo</th><th>Dif.</th><th></th></tr></thead>
+    <tbody>
+      {% for q in questoes %}
+      <tr>
+        <td>{{ q.area_label }}</td>
+        <td>{{ q.enunciado[:80] }}{% if q.enunciado|length > 80 %}…{% endif %}</td>
+        <td>{{ q.artigo or '—' }}</td>
+        <td>{{ q.dificuldade }}</td>
+        <td class="acoes-linha">
+          <a href="{{ url_for('admin.questao_form', questao_id=q.id) }}">Editar</a>
+          <form method="post" action="{{ url_for('admin.questao_excluir', questao_id=q.id) }}" data-confirm="Excluir esta questão?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="link-excluir" type="submit">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted">Nenhuma questão própria ainda. As provas usam a biblioteca global por enquanto.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="login-wrap">
+  <div class="card login-card">
+    <div class="login-head">
+      <span class="brand-mark brand-mark-lg">LGPD</span>
+      <h1>Plataforma de conformidade</h1>
+      <p class="muted">Treinamento, avaliação e certificação por setor.</p>
+    </div>
+
+    <form method="post" action="{{ url_for('auth.login') }}" class="form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="campo">
+        <span>E-mail</span>
+        <input type="email" name="email" autocomplete="username" required autofocus>
+      </label>
+      <label class="campo">
+        <span>Senha</span>
+        <input type="password" name="senha" autocomplete="current-password" required>
+      </label>
+      <button class="btn btn-primary btn-bloco" type="submit">Entrar</button>
+    </form>
+
+    <p class="muted" style="margin-top:1rem; text-align:center;">Não tem conta? <a href="{{ url_for('auth.cadastro') }}">Criar conta da empresa</a></p>
+
+    <details class="demo">
+      <summary>Contas de demonstração</summary>
+      <ul>
+        <li><strong>Encarregado:</strong> dpo@acme.com.br</li>
+        <li><strong>Gestor (RH):</strong> gestor.rh@acme.com.br</li>
+        <li><strong>Colaborador (RH):</strong> ana@acme.com.br</li>
+        <li>Senha de todas: <code>lgpd1234</code></li>
+      </ul>
+    </details>
+  </div>
+</div>
+{% endblock %}

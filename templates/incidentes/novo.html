@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titulo %}Registrar incidente — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('incidentes.listar') }}">Voltar aos incidentes</a>
+  <h1>Registrar incidente</h1>
+</div>
+<div class="card">
+  <form method="post" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="campo"><span>Título</span><input type="text" name="titulo" required></label>
+    <div class="form-row">
+      <label class="campo"><span>Ocorrido em</span><input type="date" name="ocorrido_em"></label>
+      <label class="campo"><span>Nº de titulares afetados</span><input type="number" name="num_titulares" min="0"></label>
+      <label class="campo">
+        <span>Risco</span>
+        <select name="risco">
+          <option value="">—</option>
+          {% for code, label in niveis %}<option value="{{ code }}">{{ label }}</option>{% endfor %}
+        </select>
+      </label>
+    </div>
+    <label class="campo"><span>Descrição</span><textarea name="descricao" rows="3"></textarea></label>
+    <label class="campo"><span>Dados afetados</span><textarea name="dados_afetados" rows="2"></textarea></label>
+    <button class="btn btn-primary" type="submit">Registrar</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titulo %}Administração — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Administração</h1>
+  <p class="muted">{{ empresa.nome }}</p>
+</div>
+
+<div class="grid grid-2">
+  <a class="card card-link" href="{{ url_for('admin.setores') }}">
+    <h3>Setores</h3>
+    <p class="muted">{{ n_setores }} cadastrado(s). Crie e mapeie áreas da LGPD.</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('admin.usuarios') }}">
+    <h3>Usuários</h3>
+    <p class="muted">{{ n_usuarios }} cadastrado(s). Papéis, setor e senha.</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('admin.trilhas') }}">
+    <h3>Trilhas</h3>
+    <p class="muted">{{ n_trilhas }} própria(s). Crie conteúdo da sua empresa.</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('admin.questoes') }}">
+    <h3>Questões</h3>
+    <p class="muted">{{ n_questoes }} própria(s). Amplie o banco de avaliações.</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('admin.reavaliacoes') }}">
+    <h3>Reavaliações</h3>
+    <p class="muted">Quem está vencido ou perto de vencer a certificação.</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('admin.auditoria') }}">
+    <h3>Auditoria</h3>
+    <p class="muted">Registro de ações sensíveis (accountability).</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('admin.configuracoes') }}">
+    <h3>Configurações</h3>
+    <p class="muted">Política de segurança da empresa (ex.: 2FA obrigatório).</p>
+  </a>
+</div>
+{% endblock %}

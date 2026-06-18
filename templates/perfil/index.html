@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}Meu perfil — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Meu perfil</h1>
+  <p class="muted">{{ current_user.nome }} — {{ current_user.papel_label }}</p>
+</div>
+
+<div class="card">
+  <h3>Dados</h3>
+  <p class="muted">E-mail: <strong>{{ current_user.email }}</strong></p>
+  {% if current_user.setor %}<p class="muted">Setor: <strong>{{ current_user.setor.nome }}</strong></p>{% endif %}
+</div>
+
+<div class="card">
+  <div class="cert-head">
+    <h3>Verificação em duas etapas (2FA)</h3>
+    {% if current_user.mfa_ativo %}<span class="pill pill-ok">ativa</span>{% else %}<span class="pill pill-alerta">inativa</span>{% endif %}
+  </div>
+  <p class="muted">Protege o login com um código gerado por app autenticador (Google Authenticator, Authy, etc.).</p>
+  {% if current_user.mfa_ativo %}
+    <p class="muted">Códigos de recuperação não usados: <strong>{{ codigos_restantes }}</strong></p>
+    <div class="cert-acoes">
+      <form method="post" action="{{ url_for('perfil.regenerar_codigos') }}" data-confirm="Gerar novos códigos? Os antigos deixam de valer.">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-ghost" type="submit" style="border-color:var(--borda);color:var(--primaria);">Gerar novos códigos</button>
+      </form>
+      <form method="post" action="{{ url_for('perfil.desativar_2fa') }}" data-confirm="Desativar a verificação em duas etapas?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-ghost" type="submit" style="border-color:var(--borda);color:var(--erro);">Desativar 2FA</button>
+      </form>
+    </div>
+  {% else %}
+    <a class="btn btn-primary" href="{{ url_for('perfil.ativar_2fa') }}">Ativar 2FA</a>
+  {% endif %}
+</div>
+{% endblock %}

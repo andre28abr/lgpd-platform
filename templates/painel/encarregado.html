@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block titulo %}Painel do Encarregado — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <h1>Painel do Encarregado</h1>
+  <p class="muted">Visão geral de conformidade de {{ current_user.empresa.nome }}.</p>
+</div>
+
+<div class="grid grid-4">
+  <div class="card metric">
+    <span class="metric-num">{{ dados.pct_conformidade }}%</span>
+    <span class="metric-lbl">Conformidade geral</span>
+  </div>
+  <div class="card metric">
+    <span class="metric-num">{{ dados.setores }}</span>
+    <span class="metric-lbl">Setores</span>
+  </div>
+  <div class="card metric">
+    <span class="metric-num">{{ dados.colaboradores }}</span>
+    <span class="metric-lbl">Colaboradores</span>
+  </div>
+  <div class="card metric">
+    <span class="metric-num">{{ dados.em_dia }}</span>
+    <span class="metric-lbl">Em dia (certificados válidos)</span>
+  </div>
+</div>
+
+<div class="section-head">
+  <h2>Ranking de setores</h2>
+  <a class="btn btn-ghost" href="{{ url_for('ranking.index') }}">Ver detalhes</a>
+</div>
+<div class="card">
+  <table class="tabela">
+    <thead>
+      <tr><th>#</th><th>Setor</th><th>Área</th><th>Colaboradores</th><th>Em dia</th><th>Média</th></tr>
+    </thead>
+    <tbody>
+      {% for linha in dados.ranking %}
+      <tr>
+        <td>{{ linha.posicao }}</td>
+        <td>{{ linha.setor.nome }}</td>
+        <td>{{ linha.setor.area_label }}</td>
+        <td>{{ linha.n }}</td>
+        <td><span class="pill {{ 'pill-ok' if linha.pct_em_dia >= 70 else 'pill-alerta' }}">{{ linha.pct_em_dia }}%</span></td>
+        <td>{{ linha.media if linha.media is not none else '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">Nenhum setor cadastrado ainda. <a href="{{ url_for('admin.setores') }}">Cadastrar setor</a>.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="section-head"><h2>Atalhos</h2></div>
+<div class="grid grid-3">
+  <a class="card card-link" href="{{ url_for('admin.setores') }}"><h3>Setores</h3><p class="muted">Cadastrar e organizar áreas.</p></a>
+  <a class="card card-link" href="{{ url_for('admin.usuarios') }}"><h3>Usuários</h3><p class="muted">Gerir colaboradores e papéis.</p></a>
+  <a class="card card-link" href="{{ url_for('trilhas.listar') }}"><h3>Trilhas</h3><p class="muted">Conteúdo de treinamento por área.</p></a>
+</div>
+{% endblock %}

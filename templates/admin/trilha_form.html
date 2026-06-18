@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar' if trilha else 'Nova' }} trilha — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('admin.trilhas') }}">Voltar às trilhas</a>
+  <h1>{{ 'Editar trilha' if trilha else 'Nova trilha' }}</h1>
+</div>
+
+<div class="card">
+  <form method="post" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="campo"><span>Título</span><input type="text" name="titulo" value="{{ trilha.titulo if trilha else '' }}" required></label>
+    <label class="campo">
+      <span>Área</span>
+      <select name="area" required>
+        {% for code, label in areas %}<option value="{{ code }}" {% if trilha and trilha.area == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="campo"><span>Resumo</span><input type="text" name="resumo" value="{{ trilha.resumo if trilha else '' }}"></label>
+    <label class="campo"><span>Conteúdo (Markdown)</span><textarea name="conteudo_md" rows="14">{{ trilha.conteudo_md if trilha else '' }}</textarea></label>
+    <label class="campo-check"><input type="checkbox" name="publicada" {% if not trilha or trilha.publicada %}checked{% endif %}> Publicada</label>
+    <button class="btn btn-primary" type="submit">Salvar trilha</button>
+  </form>
+</div>
+{% endblock %}
