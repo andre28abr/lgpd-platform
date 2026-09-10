@@ -9,3 +9,5 @@ select = ["E", "F", "W", "I", "B", "BLE"]
 [lint.per-file-ignores]
 # Migrações são geradas pelo Alembic; não vale a pena "embelezar" à mão.
 "migrations/versions/*.py" = ["E501", "I"]
+# Banco de questões e trilhas: prosa (enunciados, explicações) — a largura não é código.
+"conteudo/*.py" = ["E501"]

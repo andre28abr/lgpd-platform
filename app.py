@@ -274,6 +274,24 @@ def register_cli(app: Flask) -> None:
                 enviados, _ = notificar_prazos(empresa)
                 print(f"  e-mail: {enviados} Encarregado(s) notificado(s)")
 
+    @app.cli.command("exportar-questoes")
+    @click.argument("arquivo", type=click.Path(dir_okay=False))
+    def exportar_questoes(arquivo):
+        """Exporta o banco curado (conteudo/) em CSV para revisão jurídica do Encarregado."""
+        import csv
+
+        from conteudo import QUESTOES
+        with open(arquivo, "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(["area", "dificuldade", "enunciado", "fonte", "correta", "incorretas", "explicacao"])
+            for area, itens in QUESTOES.items():
+                for enunciado, artigo, explic, dif, alternativas in itens:
+                    correta = next(t for t, ok in alternativas if ok)
+                    erradas = " | ".join(t for t, ok in alternativas if not ok)
+                    w.writerow([area, dif, enunciado, artigo, correta, erradas, explic])
+        total = sum(len(v) for v in QUESTOES.values())
+        print(f"{total} questões exportadas para {arquivo}.")
+
     @app.cli.command("expurgar")
     @click.option("--auditoria", type=int, default=None, help="Dias de retenção da auditoria (padrão: config).")
     @click.option("--emails", type=int, default=None, help="Dias de retenção da caixa de saída (padrão: config).")

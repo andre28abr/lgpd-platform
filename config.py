@@ -57,7 +57,13 @@ class Config:
 
     # Regras de avaliação / certificação
     NOTA_CORTE = int(os.environ.get("NOTA_CORTE", "70"))
-    QUESTOES_POR_PROVA = int(os.environ.get("QUESTOES_POR_PROVA", "8"))
+    # Prova = QUESTOES_POR_PROVA questões da área do setor + QUESTOES_GERAIS_POR_PROVA da área GERAL,
+    # sorteadas com equilíbrio de dificuldade. O pool de cada área precisa ter ao menos
+    # POOL_MINIMO_FATOR vezes o que é sorteado, senão a prova não abre (evita "decoreba").
+    QUESTOES_POR_PROVA = int(os.environ.get("QUESTOES_POR_PROVA", "7"))
+    QUESTOES_GERAIS_POR_PROVA = int(os.environ.get("QUESTOES_GERAIS_POR_PROVA", "3"))
+    POOL_MINIMO_FATOR = int(os.environ.get("POOL_MINIMO_FATOR", "2"))
+    PROVAS_POR_DIA = int(os.environ.get("PROVAS_POR_DIA", "3"))  # tentativas por colaborador por dia
     CERT_VALIDADE_DIAS = int(os.environ.get("CERT_VALIDADE_DIAS", "365"))
     TEMPO_PROVA_MIN = int(os.environ.get("TEMPO_PROVA_MIN", "15"))  # 0 = sem limite
 

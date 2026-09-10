@@ -26,14 +26,53 @@ bp = Blueprint("provas", __name__, url_prefix="/provas")
 TOLERANCIA_ENVIO_S = 30
 
 
-def _sortear_questoes(empresa_id, area, quantidade):
-    base = models.Questao.query.filter(
+def _pool(empresa_id, area):
+    """Questões ativas da área: biblioteca global + as próprias da empresa."""
+    return models.Questao.query.filter(
         models.Questao.area == area,
         models.Questao.ativo.is_(True),
         or_(models.Questao.empresa_id.is_(None), models.Questao.empresa_id == empresa_id),
     ).all()
-    random.shuffle(base)
-    return base[:quantidade]
+
+
+def _balancear(questoes, quantidade):
+    """Sorteia ``quantidade`` questões alternando entre os níveis de dificuldade (1, 2, 3),
+    para a prova não sair só de fáceis nem só de difíceis."""
+    por_nivel = {}
+    for q in questoes:
+        por_nivel.setdefault(q.dificuldade, []).append(q)
+    for grupo in por_nivel.values():
+        random.shuffle(grupo)
+    escolhidas = []
+    while len(escolhidas) < quantidade and any(por_nivel.values()):
+        for nivel in sorted(por_nivel):
+            if por_nivel[nivel] and len(escolhidas) < quantidade:
+                escolhidas.append(por_nivel[nivel].pop())
+    random.shuffle(escolhidas)
+    return escolhidas
+
+
+def _sortear_questoes(empresa_id, area, n_area, n_geral):
+    """7 da área do setor + 3 gerais (config). Para a área GERAL, tudo vem do pool geral.
+    Devolve (questoes, mensagem_de_erro): pool abaixo do mínimo recusa a prova."""
+    cfg = current_app.config
+    fator = cfg["POOL_MINIMO_FATOR"]
+    if area == "GERAL":
+        pool = _pool(empresa_id, "GERAL")
+        total = n_area + n_geral
+        if len(pool) < fator * total:
+            return [], f"Banco insuficiente para a área Geral: {len(pool)} questões, mínimo {fator * total}."
+        return _balancear(pool, total), None
+
+    pool_area, pool_geral = _pool(empresa_id, area), _pool(empresa_id, "GERAL")
+    if len(pool_area) < fator * n_area:
+        return [], (f"Banco insuficiente para a área {models.label_area(area)}: {len(pool_area)} questões, "
+                    f"mínimo {fator * n_area}. Cadastre mais questões em Administração.")
+    if len(pool_geral) < fator * n_geral:
+        return [], f"Banco insuficiente para a área Geral: {len(pool_geral)} questões, mínimo {fator * n_geral}."
+    escolhidas = _balancear(pool_area, n_area) + _balancear(pool_geral, n_geral)
+    random.shuffle(escolhidas)
+    return escolhidas, None
 
 
 @bp.route("/")
@@ -61,10 +100,21 @@ def iniciar():
         flash("Selecione uma área válida para a avaliação.", "erro")
         return redirect(url_for("provas.index"))
 
-    quantidade = current_app.config["QUESTOES_POR_PROVA"]
-    questoes = _sortear_questoes(current_user.empresa_id, area, quantidade)
-    if not questoes:
-        flash("Ainda não há questões cadastradas para esta área.", "aviso")
+    cfg = current_app.config
+    hoje = agora_utc().replace(hour=0, minute=0, second=0, microsecond=0)
+    feitas_hoje = models.Prova.query.filter(
+        models.Prova.usuario_id == current_user.id, models.Prova.criado_em >= hoje,
+    ).count()
+    if feitas_hoje >= cfg["PROVAS_POR_DIA"]:
+        flash(f"Limite de {cfg['PROVAS_POR_DIA']} avaliações por dia atingido. "
+              "Estude a trilha e volte amanhã.", "aviso")
+        return redirect(url_for("provas.index"))
+
+    questoes, erro = _sortear_questoes(
+        current_user.empresa_id, area, cfg["QUESTOES_POR_PROVA"], cfg["QUESTOES_GERAIS_POR_PROVA"],
+    )
+    if erro:
+        flash(erro, "aviso")
         return redirect(url_for("provas.index"))
 
     prova = models.Prova(
