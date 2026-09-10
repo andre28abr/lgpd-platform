@@ -503,6 +503,26 @@ class RecoveryCode(db.Model):
     criado_em = db.Column(db.DateTime, default=agora_utc, nullable=False)
 
 
+# ── Caixa de saída de e-mails ───────────────────────────────────────────────
+class EmailEnviado(db.Model):
+    """Cópia de todo e-mail que a plataforma tentou enviar.
+
+    Em modo dry-run (sem MAIL_SERVER) é a única forma de *ver* as notificações —
+    reset de senha, reavaliações, pedidos — o que torna a demo demonstrável sem
+    SMTP. Com SMTP real, vira histórico de envios (``enviado`` = entregue ao servidor).
+    """
+    __tablename__ = "emails_enviados"
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=True, index=True)
+    remetente = db.Column(db.String(255))
+    destinatario = db.Column(db.String(255), nullable=False)
+    assunto = db.Column(db.String(255), nullable=False)
+    corpo = db.Column(db.Text)
+    enviado = db.Column(db.Boolean, default=False, nullable=False, server_default=false())
+    criado_em = db.Column(db.DateTime, default=agora_utc, nullable=False, index=True)
+
+
 # ── ROPA — Registro das operações de tratamento (Art. 37) ───────────────────
 class RopaRegistro(db.Model):
     __tablename__ = "ropa_registros"

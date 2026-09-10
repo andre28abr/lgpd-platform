@@ -469,10 +469,12 @@ def executar_seed():
 
     _seed_biblioteca()
     _seed_empresa()
+    _seed_segunda_empresa()
     db.session.commit()
     print("Seed concluído.")
-    print("  Login de demonstração: dpo@acme.com.br / paula@acme.com.br / ana@acme.com.br")
-    print(f"  Senha: {SENHA_DEMO}")
+    print("  Acme (empresa principal): dpo@acme.com.br / gestor.rh@acme.com.br / ana@acme.com.br")
+    print("  Nova Era Saúde (segunda empresa, para ver o isolamento): dpo@novaera.com.br")
+    print(f"  Senha de todos: {SENHA_DEMO}")
 
 
 def _seed_biblioteca():
@@ -551,47 +553,125 @@ def _seed_empresa():
                 nota=nota, valido_ate=models.Certificado.validade_padrao(dias),
             ))
 
-    # ROPA de exemplo
-    db.session.add(models.RopaRegistro(
-        empresa_id=empresa.id, setor_id=setores["RH"].id, atividade="Folha de pagamento",
-        titulares="Colaboradores", categorias_dados="Nome, CPF, conta bancária, dependentes",
-        finalidade="Processar a folha e cumprir obrigações trabalhistas",
-        base_legal="OBRIGACAO_LEGAL", retencao="Durante o vínculo + prazos legais",
-        compartilhamento="Banco, contabilidade e órgãos públicos",
-    ))
-    db.session.add(models.RopaRegistro(
-        empresa_id=empresa.id, setor_id=setores["MARKETING"].id, atividade="Newsletter",
-        titulares="Clientes e leads", categorias_dados="Nome, e-mail",
-        finalidade="Envio de comunicações de marketing", base_legal="CONSENTIMENTO",
-        retencao="Até a revogação do consentimento",
-        compartilhamento="Plataforma de e-mail marketing (operador)",
-    ))
+    _seed_pilar2(empresa, setores, usuarios)
+    return empresa
 
-    # Pedido de titular de exemplo
+
+def _seed_pilar2(empresa, setores, usuarios):
+    """Dados de exemplo do Pilar 2 — o suficiente para a demo ter o que mostrar:
+    ROPA por setor, pedidos em situações diferentes (no prazo, vencendo, atrasado,
+    concluído), RIPDs, incidentes e um diagnóstico já concluído."""
     from datetime import timedelta
-    db.session.add(models.PedidoTitular(
-        empresa_id=empresa.id, nome_titular="José da Silva", contato="jose@example.com",
-        tipo="ACESSO", descricao="Solicita cópia dos seus dados pessoais.",
-        status="recebido", prazo=agora_utc() + timedelta(days=15),
-    ))
 
-    # RIPD de exemplo
+    agora = agora_utc()
+    dpo = usuarios["dpo@acme.com.br"]
+
+    ropas = [
+        ("RH", "Folha de pagamento", "Colaboradores", "Nome, CPF, conta bancária, dependentes",
+         "Processar a folha e cumprir obrigações trabalhistas", "OBRIGACAO_LEGAL",
+         "Durante o vínculo + prazos legais", "Banco, contabilidade e órgãos públicos"),
+        ("RH", "Recrutamento e seleção", "Candidatos", "Nome, contato, currículo, histórico profissional",
+         "Avaliar candidatos a vagas", "LEGITIMO_INTERESSE",
+         "6 meses após o encerramento da vaga", "Plataforma de recrutamento (operador)"),
+        ("RH", "Controle de ponto biométrico", "Colaboradores", "Impressão digital (dado sensível), horários",
+         "Registro de jornada", "OBRIGACAO_LEGAL", "5 anos", "Fornecedor do relógio de ponto (operador)"),
+        ("FINANCEIRO", "Faturamento e cobrança", "Clientes", "Nome, CPF/CNPJ, endereço, dados de pagamento",
+         "Emitir notas fiscais e cobrar", "CONTRATO", "5 anos (prazo fiscal)", "Contabilidade, banco, Receita"),
+        ("MARKETING", "Newsletter", "Clientes e leads", "Nome, e-mail",
+         "Envio de comunicações de marketing", "CONSENTIMENTO",
+         "Até a revogação do consentimento", "Plataforma de e-mail marketing (operador)"),
+        ("TI", "Logs de acesso aos sistemas", "Colaboradores", "Login, IP, data/hora, ações",
+         "Segurança da informação e auditoria", "LEGITIMO_INTERESSE", "12 meses", "Provedor de nuvem (operador)"),
+    ]
+    for area, atividade, titulares, dados, fim, base, ret, comp in ropas:
+        db.session.add(models.RopaRegistro(
+            empresa_id=empresa.id, setor_id=setores[area].id, atividade=atividade, titulares=titulares,
+            categorias_dados=dados, finalidade=fim, base_legal=base, retencao=ret, compartilhamento=comp,
+        ))
+    db.session.flush()
+    ropa_biometria = models.RopaRegistro.query.filter_by(
+        empresa_id=empresa.id, atividade="Controle de ponto biométrico").first()
+
+    pedidos = [
+        ("José da Silva", "jose@example.com", "ACESSO", "Solicita cópia dos seus dados pessoais.",
+         "recebido", 12, None, None),
+        ("Maria Oliveira", "maria@example.com", "ELIMINACAO", "Quer sair da newsletter e apagar o cadastro.",
+         "em_andamento", 3, dpo, None),
+        ("Carlos Pereira", "carlos@example.com", "CORRECAO", "Endereço cadastrado está desatualizado.",
+         "recebido", -4, None, None),  # atrasado: o painel precisa acusar
+        ("Fernanda Costa", "fernanda@example.com", "CONFIRMACAO", "Pergunta se a empresa trata seus dados.",
+         "concluido", 2, dpo, "Confirmado o tratamento no cadastro de clientes; resposta enviada."),
+    ]
+    for nome, contato, tipo, desc, status, dias, resp, obs in pedidos:
+        db.session.add(models.PedidoTitular(
+            empresa_id=empresa.id, nome_titular=nome, contato=contato, tipo=tipo, descricao=desc,
+            status=status, prazo=agora + timedelta(days=dias), responsavel_id=resp.id if resp else None,
+            observacoes=obs, concluido_em=agora - timedelta(days=1) if status == "concluido" else None,
+            criado_em=agora - timedelta(days=15 - dias),
+        ))
+
     db.session.add(models.Ripd(
-        empresa_id=empresa.id, titulo="Controle de ponto por biometria",
+        empresa_id=empresa.id, ropa_id=ropa_biometria.id if ropa_biometria else None,
+        titulo="Controle de ponto por biometria",
         descricao_tratamento="Coleta de digital para registro de jornada dos colaboradores.",
         probabilidade=2, impacto=3, medidas="Acesso restrito, criptografia e retenção mínima.",
-        risco_residual="medio", conclusao="Tratamento viável com as medidas adotadas.",
-        status="concluido",
+        risco_residual="medio", conclusao="Tratamento viável com as medidas adotadas.", status="concluido",
+    ))
+    db.session.add(models.Ripd(
+        empresa_id=empresa.id, titulo="Câmeras de segurança com reconhecimento facial",
+        descricao_tratamento="Avaliação preliminar do uso de reconhecimento facial na portaria.",
+        probabilidade=3, impacto=3, medidas="", risco_residual=None,
+        conclusao="", status="rascunho",
     ))
 
-    # Incidente de exemplo
     db.session.add(models.Incidente(
         empresa_id=empresa.id, titulo="E-mail enviado a destinatário errado",
-        ocorrido_em=agora_utc(), descricao="Planilha com dados de clientes enviada por engano.",
+        ocorrido_em=agora - timedelta(days=2), descricao="Planilha com dados de clientes enviada por engano.",
         dados_afetados="Nome e e-mail", num_titulares=12, risco="medio",
-        comunicado_anpd=False, comunicado_titulares=True, comunicado_titulares_em=agora_utc(),
-        medidas="Solicitado o descarte ao destinatário e orientada a equipe.",
-        status="em_tratamento",
+        comunicado_anpd=False, comunicado_titulares=True, comunicado_titulares_em=agora - timedelta(days=1),
+        medidas="Solicitado o descarte ao destinatário e orientada a equipe.", status="em_tratamento",
+    ))
+    db.session.add(models.Incidente(
+        empresa_id=empresa.id, titulo="Notebook de vendedor furtado",
+        ocorrido_em=agora - timedelta(days=40), descricao="Equipamento com disco criptografado e senha.",
+        dados_afetados="Cadastro de clientes (criptografado)", num_titulares=300, risco="baixo",
+        comunicado_anpd=False, comunicado_titulares=False,
+        medidas="Bloqueio remoto, troca de credenciais e boletim de ocorrência.", status="encerrado",
     ))
 
+    # Um diagnóstico concluído, para o resultado e o plano de ação já existirem.
+    diag = models.Diagnostico(empresa_id=empresa.id, usuario_id=dpo.id, setor_id=None,
+                              criado_em=agora - timedelta(days=30), status="em_andamento")
+    db.session.add(diag)
+    db.session.flush()
+    respostas = {"GOVERNANCA": 2, "BASES_LEGAIS": 1, "SEGURANCA": 1, "DIREITOS": 2, "INCIDENTES": 0}
+    for p in models.DiagnosticoPergunta.query.all():
+        diag.respostas.append(models.DiagnosticoResposta(pergunta_id=p.id, valor=respostas.get(p.dimensao, 1)))
+    from services.diagnostico import computar
+    diag.score, diag.nivel, _, _ = computar(diag)
+    diag.status, diag.finalizado_em = "concluido", agora - timedelta(days=30)
+
+
+def _seed_segunda_empresa():
+    """Segunda empresa, com dados próprios: serve para mostrar o isolamento multi-tenant
+    ao vivo — entre como dpo@novaera.com.br e nada da Acme aparece."""
+    empresa = models.Empresa(nome="Nova Era Saúde", slug="nova-era")
+    db.session.add(empresa)
+    db.session.flush()
+    setor = models.Setor(empresa_id=empresa.id, nome="Atendimento", slug="atendimento", area="ATENDIMENTO")
+    db.session.add(setor)
+    db.session.flush()
+    for nome, email, papel, setor_id in (
+        ("Helena Martins", "dpo@novaera.com.br", models.PAPEL_ENCARREGADO, None),
+        ("Rafael Nunes", "rafael@novaera.com.br", models.PAPEL_COLABORADOR, setor.id),
+    ):
+        u = models.Usuario(empresa_id=empresa.id, nome=nome, email=email, papel=papel, setor_id=setor_id)
+        u.definir_senha(SENHA_DEMO)
+        db.session.add(u)
+    db.session.add(models.RopaRegistro(
+        empresa_id=empresa.id, setor_id=setor.id, atividade="Agendamento de consultas",
+        titulares="Pacientes", categorias_dados="Nome, telefone, convênio, especialidade procurada",
+        finalidade="Marcar e confirmar consultas", base_legal="TUTELA_SAUDE",
+        retencao="20 anos (prontuário)", compartilhamento="Operadora do plano de saúde",
+    ))
     return empresa

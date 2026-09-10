@@ -33,7 +33,11 @@
   </a>
   <a class="card card-link" href="{{ url_for('admin.configuracoes') }}">
     <h3>Configurações</h3>
-    <p class="muted">Política de segurança da empresa (ex.: 2FA obrigatório).</p>
+    <p class="muted">Política de segurança da empresa (ex.: 2FA obrigatório) e remetente de e-mail.</p>
+  </a>
+  <a class="card card-link" href="{{ url_for('admin.emails') }}">
+    <h3>E-mails</h3>
+    <p class="muted">Caixa de saída: reset de senha, reavaliações e pedidos — visível mesmo sem SMTP.</p>
   </a>
 </div>
 {% endblock %}

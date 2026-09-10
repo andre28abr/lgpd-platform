@@ -16,6 +16,7 @@ if os.environ.get("LGPD_SKIP_DOTENV") != "1":
     load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"), override=True)
 
 import bleach
+import click
 import markdown as md_lib
 from flask import Flask, flash, redirect, render_template, request, url_for
 from markupsafe import Markup
@@ -251,6 +252,25 @@ def register_cli(app: Flask) -> None:
             total_enviados += enviados
             print(f"{empresa.slug}: {enviados} de {total} pendente(s) notificado(s)")
         print(f"Total enviado: {total_enviados}")
+
+    @app.cli.command("demo-reset")
+    @click.option("--confirmar", is_flag=True, help="Confirma a recriação (apaga TODOS os dados).")
+    @click.option("--forcar", is_flag=True, help="Permite rodar fora do SQLite (cuidado).")
+    def demo_reset(confirmar, forcar):
+        """Recria a demonstração do zero (apaga tudo e roda o seed). Só para SQLite local."""
+        uri = app.config["SQLALCHEMY_DATABASE_URI"]
+        if not uri.startswith("sqlite") and not forcar:
+            print("Recusado: o banco não é SQLite. Use --forcar se tiver certeza.")
+            raise SystemExit(1)
+        if not confirmar:
+            print("Isto apaga TODOS os dados e recria a demo. Rode com --confirmar.")
+            raise SystemExit(1)
+        from seed import executar_seed
+        db.session.remove()
+        db.drop_all()
+        db.create_all()
+        executar_seed()
+        print("Demonstração recriada.")
 
     @app.cli.command("auditoria-verificar")
     def auditoria_verificar():

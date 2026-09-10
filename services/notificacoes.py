@@ -26,7 +26,7 @@ def notificar_reavaliacoes(empresa) -> tuple[int, int]:
             f"Empresa: {empresa.nome}"
         )
         if enviar(usuario.email, "LGPD: sua certificação precisa de atenção", corpo,
-                  remetente=empresa.email_remetente):
+                  remetente=empresa.email_remetente, empresa_id=empresa.id):
             enviados += 1
 
     total = len(pendentes)
@@ -47,7 +47,8 @@ def notificar_novo_pedido(pedido, empresa):
     corpo = (f"Novo pedido de titular: {pedido.tipo_label}.\n"
              f"Titular: {pedido.nome_titular}. Prazo de atendimento: {prazo}.")
     for email in _encarregados_emails(empresa.id):
-        enviar(email, "LGPD: novo pedido de titular", corpo, remetente=empresa.email_remetente)
+        enviar(email, "LGPD: novo pedido de titular", corpo,
+               remetente=empresa.email_remetente, empresa_id=empresa.id)
 
 
 def notificar_pedido_concluido(pedido):
@@ -55,11 +56,12 @@ def notificar_pedido_concluido(pedido):
         empresa = db.session.get(models.Empresa, pedido.empresa_id)
         enviar(pedido.contato, "LGPD: seu pedido foi atendido",
                f"Olá, {pedido.nome_titular}. Seu pedido ({pedido.tipo_label}) foi concluído.",
-               remetente=empresa.email_remetente if empresa else None)
+               remetente=empresa.email_remetente if empresa else None, empresa_id=pedido.empresa_id)
 
 
 def notificar_novo_incidente(incidente, empresa):
     corpo = (f"Incidente registrado: {incidente.titulo}.\n"
              f"Risco: {incidente.risco_label}. Avalie a comunicação à ANPD e aos titulares (Art. 48).")
     for email in _encarregados_emails(empresa.id):
-        enviar(email, "LGPD: novo incidente de segurança", corpo, remetente=empresa.email_remetente)
+        enviar(email, "LGPD: novo incidente de segurança", corpo,
+               remetente=empresa.email_remetente, empresa_id=empresa.id)

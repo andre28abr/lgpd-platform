@@ -328,6 +328,17 @@ def auditoria():
                            tem_proxima=(pagina * por_pagina < total))
 
 
+@bp.route("/emails")
+def emails():
+    """Caixa de saída: todo e-mail que a plataforma tentou enviar para esta empresa."""
+    itens = (
+        models.EmailEnviado.query.filter_by(empresa_id=current_user.empresa_id)
+        .order_by(models.EmailEnviado.criado_em.desc()).limit(100).all()
+    )
+    return render_template("admin/emails.html", emails=itens,
+                           dry_run=not current_app.config.get("MAIL_SERVER"))
+
+
 @bp.route("/auditoria.csv")
 def auditoria_csv():
     import csv

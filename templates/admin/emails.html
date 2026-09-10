@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}E-mails — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('admin.index') }}">Voltar à administração</a>
+  <h1>E-mails enviados</h1>
+  <p class="muted">
+    Cópia de tudo que a plataforma tentou enviar para esta empresa (últimos 100).
+    {% if dry_run %}<strong>Modo demonstração:</strong> sem MAIL_SERVER configurado, nenhum e-mail sai de verdade — as mensagens ficam registradas aqui, o que permite acompanhar reset de senha, reavaliações e pedidos sem servidor de e-mail.{% endif %}
+  </p>
+</div>
+<div class="card">
+  <table class="tabela">
+    <thead><tr><th>Quando</th><th>Para</th><th>Assunto</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for e in emails %}
+      <tr>
+        <td>{{ e.criado_em.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ e.destinatario }}</td>
+        <td>{{ e.assunto }}</td>
+        <td>{% if e.enviado %}<span class="pill pill-ok">enviado</span>{% else %}<span class="pill">registrado (dry-run)</span>{% endif %}</td>
+        <td>
+          <details>
+            <summary>Ver conteúdo</summary>
+            <p class="muted">De: {{ e.remetente or '—' }}</p>
+            <pre style="white-space:pre-wrap;font:inherit;margin:.4rem 0 0;">{{ e.corpo }}</pre>
+          </details>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted">Nenhum e-mail ainda. Peça um reset de senha na tela de login ou notifique as reavaliações para ver aqui.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

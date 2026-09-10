@@ -43,4 +43,4 @@ def enviar_link(usuario) -> bool:
         f"Se você não pediu isso, ignore esta mensagem — sua senha continua a mesma."
     )
     return enviar(usuario.email, "LGPD: redefinição de senha", corpo,
-                  remetente=usuario.empresa.email_remetente)
+                  remetente=usuario.empresa.email_remetente, empresa_id=usuario.empresa_id)

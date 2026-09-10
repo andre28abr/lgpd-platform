@@ -1,12 +1,17 @@
 """Envio de e-mail por SMTP, com fallback "dry-run" quando não há servidor.
 
-Sem MAIL_SERVER configurado, apenas registra no log (útil em desenvolvimento e
-demonstração, sem depender de infraestrutura de e-mail).
+Sem MAIL_SERVER configurado, nada sai para a rede — mas TODO e-mail (enviado ou
+não) fica registrado na caixa de saída (``EmailEnviado``), visível em
+Administração → E-mails. É o que permite demonstrar reset de senha e
+notificações sem depender de infraestrutura de e-mail.
 """
 import smtplib
 from email.message import EmailMessage
 
 from flask import current_app
+
+import models
+from extensions import db
 
 SMTP_TIMEOUT_S = 10
 
@@ -16,11 +21,26 @@ def _linha_unica(valor: str) -> str:
     return (valor or "").replace("\r", " ").replace("\n", " ").strip()
 
 
-def enviar(destinatario: str, assunto: str, corpo: str, remetente: str | None = None) -> bool:
+def _registrar_saida(empresa_id, de, para, assunto, corpo, enviado) -> None:
+    """Guarda a cópia na caixa de saída. Best-effort: nunca derruba o envio."""
+    try:
+        db.session.add(models.EmailEnviado(
+            empresa_id=empresa_id, remetente=de, destinatario=para,
+            assunto=assunto[:255], corpo=corpo, enviado=enviado,
+        ))
+        db.session.commit()
+    except Exception:  # noqa: BLE001 — a caixa de saída é acessória
+        db.session.rollback()
+        current_app.logger.exception("falha ao registrar e-mail na caixa de saída")
+
+
+def enviar(destinatario: str, assunto: str, corpo: str, remetente: str | None = None,
+           empresa_id: int | None = None) -> bool:
     """Retorna True se o e-mail foi de fato enviado; False em dry-run ou falha.
 
     ``remetente`` permite que cada empresa assine suas notificações (configurável
-    pelo Encarregado); em branco, vale o MAIL_FROM da plataforma.
+    pelo Encarregado); em branco, vale o MAIL_FROM da plataforma. ``empresa_id``
+    escopa a cópia na caixa de saída ao tenant.
 
     Nunca propaga exceção: uma falha de SMTP não pode derrubar a ação que a
     disparou (registrar um pedido, notificar reavaliações). O erro vai para o log.
@@ -32,8 +52,10 @@ def enviar(destinatario: str, assunto: str, corpo: str, remetente: str | None = 
 
     if not servidor:
         current_app.logger.info("email dry-run de=%s para=%s assunto=%r", de, destinatario, assunto)
+        _registrar_saida(empresa_id, de, destinatario, assunto, corpo, enviado=False)
         return False
 
+    enviado = False
     try:
         msg = EmailMessage()
         msg["From"] = de
@@ -47,7 +69,8 @@ def enviar(destinatario: str, assunto: str, corpo: str, remetente: str | None = 
             if cfg.get("MAIL_USERNAME"):
                 s.login(cfg["MAIL_USERNAME"], cfg["MAIL_PASSWORD"])
             s.send_message(msg)
-        return True
+        enviado = True
     except Exception:  # noqa: BLE001 — SMTP falha de muitas formas; todas viram log
         current_app.logger.exception("falha ao enviar e-mail para=%s assunto=%r", destinatario, assunto)
-        return False
+    _registrar_saida(empresa_id, de, destinatario, assunto, corpo, enviado=enviado)
+    return enviado
