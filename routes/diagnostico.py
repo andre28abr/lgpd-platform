@@ -5,20 +5,21 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import papeis
+from routes._helpers import gestor_somente_leitura, papeis
 from services.auditoria import registrar
 from services.diagnostico import computar
 from services.diagnostico_pdf import diagnostico_pdf
 from utils import agora_utc
 
 bp = Blueprint("diagnostico", __name__, url_prefix="/diagnostico")
+_somente_leitura = gestor_somente_leitura("diagnostico.responder")
 
 
 @bp.before_request
 @login_required
 @papeis(models.PAPEL_ENCARREGADO, models.PAPEL_GESTOR)
 def _restringe():
-    pass
+    _somente_leitura()
 
 
 def _perguntas():

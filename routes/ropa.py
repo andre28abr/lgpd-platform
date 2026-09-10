@@ -4,18 +4,19 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import fk_do_tenant, papeis
+from routes._helpers import fk_do_tenant, gestor_somente_leitura, papeis
 from services.auditoria import registrar
 from services.ropa_export import ropa_excel, ropa_pdf
 
 bp = Blueprint("ropa", __name__, url_prefix="/ropa")
+_somente_leitura = gestor_somente_leitura()  # o gestor abre o registro em modo leitura
 
 
 @bp.before_request
 @login_required
 @papeis(models.PAPEL_ENCARREGADO, models.PAPEL_GESTOR)
 def _restringe():
-    pass
+    _somente_leitura()
 
 
 def _do_empresa(reg_id):
@@ -38,6 +39,8 @@ def listar():
 @bp.route("/<int:reg_id>/editar", methods=["GET", "POST"])
 def form(reg_id=None):
     reg = _do_empresa(reg_id) if reg_id else None
+    if reg is None and not current_user.is_encarregado:
+        abort(403)  # criar é do Encarregado; o gestor só abre registros existentes
     setores = models.Setor.query.filter_by(empresa_id=current_user.empresa_id).order_by(models.Setor.nome).all()
 
     if request.method == "POST":

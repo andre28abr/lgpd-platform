@@ -131,6 +131,12 @@ def usuario_editar(usuario_id):
         else:
             papel = request.form.get("papel") or usuario.papel
             ativo = request.form.get("ativo") == "on"
+            novo_papel = papel if papel in models.PAPEIS else usuario.papel
+            perde_encarregado = usuario.is_encarregado and (novo_papel != models.PAPEL_ENCARREGADO or not ativo)
+            if perde_encarregado and _ultimo_encarregado_ativo(usuario):
+                flash("Este é o único Encarregado ativo da empresa. Promova outro usuário a Encarregado "
+                      "antes de rebaixá-lo ou inativá-lo.", "erro")
+                return redirect(url_for("admin.usuario_editar", usuario_id=usuario.id))
             if papel in models.PAPEIS:
                 usuario.papel = papel
             usuario.setor_id = fk_do_tenant(
@@ -344,6 +350,14 @@ def auditoria_csv():
 
 
 # ─────────────────────────────── Helpers ───────────────────────────────────
+def _ultimo_encarregado_ativo(usuario) -> bool:
+    """True se ``usuario`` é o único Encarregado ativo da empresa (não pode ser removido)."""
+    ativos = models.Usuario.query.filter_by(
+        empresa_id=usuario.empresa_id, papel=models.PAPEL_ENCARREGADO, ativo=True,
+    ).count()
+    return ativos <= 1 and usuario.ativo
+
+
 def _do_tenant(modelo, obj_id):
     """Busca um registro garantindo que pertence à empresa do usuário."""
     obj = db.session.get(modelo, obj_id)

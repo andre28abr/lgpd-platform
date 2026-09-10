@@ -17,6 +17,11 @@
   </div>
   <div class="card">
     <h3>Tratamento e comunicação</h3>
+    {% if not current_user.is_encarregado %}
+    <p class="muted">Status: <strong>{{ inc.status_label }}</strong> — Risco: <strong>{{ inc.risco_label }}</strong></p>
+    <p class="muted">ANPD: <strong>{% if inc.comunicado_anpd %}comunicada{% if inc.comunicado_anpd_em %} em {{ inc.comunicado_anpd_em.strftime('%d/%m/%Y') }}{% endif %}{% else %}não comunicada{% endif %}</strong></p>
+    <p class="muted">Somente leitura — a resposta é conduzida pelo Encarregado.</p>
+    {% else %}
     <form method="post" class="form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-row">
@@ -41,6 +46,7 @@
       <label class="campo"><span>Medidas adotadas</span><textarea name="medidas" rows="3">{{ inc.medidas or '' }}</textarea></label>
       <button class="btn btn-primary" type="submit">Salvar</button>
     </form>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

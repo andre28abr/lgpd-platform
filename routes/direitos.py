@@ -6,12 +6,13 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import fk_do_tenant, papeis
+from routes._helpers import fk_do_tenant, gestor_somente_leitura, papeis
 from services.auditoria import registrar
 from services.notificacoes import notificar_novo_pedido, notificar_pedido_concluido
 from utils import agora_utc
 
 bp = Blueprint("direitos", __name__, url_prefix="/direitos")
+_somente_leitura = gestor_somente_leitura("direitos.novo")
 
 PRAZO_DIAS = 15
 
@@ -20,7 +21,7 @@ PRAZO_DIAS = 15
 @login_required
 @papeis(models.PAPEL_ENCARREGADO, models.PAPEL_GESTOR)
 def _restringe():
-    pass
+    _somente_leitura()
 
 
 def _do_empresa(pid):

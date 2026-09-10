@@ -3,11 +3,13 @@
 {% block conteudo %}
 <div class="page-head">
   <a class="link-voltar" href="{{ url_for('ropa.listar') }}">Voltar ao ROPA</a>
-  <h1>{{ 'Editar registro' if reg else 'Novo registro' }}</h1>
+  <h1>{% if not current_user.is_encarregado %}Registro de tratamento{% elif reg %}Editar registro{% else %}Novo registro{% endif %}</h1>
+  {% if not current_user.is_encarregado %}<p class="muted">Somente leitura — alterações são feitas pelo Encarregado.</p>{% endif %}
 </div>
 <div class="card">
   <form method="post" class="form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if not current_user.is_encarregado %}<fieldset disabled style="border:0;padding:0;margin:0;display:contents;">{% endif %}
     <label class="campo"><span>Atividade de tratamento</span><input type="text" name="atividade" value="{{ reg.atividade if reg else '' }}" required></label>
     <div class="form-row">
       <label class="campo">
@@ -30,7 +32,9 @@
     <label class="campo"><span>Finalidade</span><textarea name="finalidade" rows="2">{{ reg.finalidade if reg else '' }}</textarea></label>
     <label class="campo"><span>Retenção</span><input type="text" name="retencao" value="{{ reg.retencao if reg else '' }}" placeholder="ex.: durante o contrato + prazo legal"></label>
     <label class="campo"><span>Compartilhamento</span><textarea name="compartilhamento" rows="2">{{ reg.compartilhamento if reg else '' }}</textarea></label>
+    {% if current_user.is_encarregado %}
     <button class="btn btn-primary" type="submit">Salvar registro</button>
+    {% else %}</fieldset>{% endif %}
   </form>
 </div>
 {% endblock %}

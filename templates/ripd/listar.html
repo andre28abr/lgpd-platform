@@ -4,9 +4,9 @@
 <div class="page-head">
   <div class="section-head">
     <h1>RIPD — Relatórios de impacto</h1>
-    <a class="btn btn-primary" href="{{ url_for('ripd.form') }}">Novo RIPD</a>
+    {% if current_user.is_encarregado %}<a class="btn btn-primary" href="{{ url_for('ripd.form') }}">Novo RIPD</a>{% endif %}
   </div>
-  <p class="muted">Avaliação de impacto e risco dos tratamentos (Art. 38).</p>
+  <p class="muted">Avaliação de impacto e risco dos tratamentos (Art. 38).{% if not current_user.is_encarregado %} Somente leitura — alterações são feitas pelo Encarregado.{% endif %}</p>
 </div>
 <div class="card">
   <table class="tabela">
@@ -19,12 +19,14 @@
         <td>{{ r.risco_residual_label }}</td>
         <td>{% if r.status == 'concluido' %}<span class="pill pill-ok">concluído</span>{% else %}<span class="pill">rascunho</span>{% endif %}</td>
         <td class="acoes-linha">
-          <a href="{{ url_for('ripd.form', rid=r.id) }}">Editar</a>
+          <a href="{{ url_for('ripd.form', rid=r.id) }}">{{ 'Editar' if current_user.is_encarregado else 'Ver' }}</a>
           <a href="{{ url_for('ripd.pdf', rid=r.id) }}">PDF</a>
+          {% if current_user.is_encarregado %}
           <form method="post" action="{{ url_for('ripd.excluir', rid=r.id) }}" data-confirm="Excluir este RIPD?">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="link-excluir" type="submit">Excluir</button>
           </form>
+          {% endif %}
         </td>
       </tr>
       {% else %}

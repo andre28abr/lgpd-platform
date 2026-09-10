@@ -4,10 +4,27 @@ import unicodedata
 from functools import wraps
 from urllib.parse import urlparse
 
-from flask import abort
+from flask import abort, request
 from flask_login import current_user
 
 from extensions import db
+
+
+def gestor_somente_leitura(*endpoints_de_edicao):
+    """Nos módulos do Pilar 2 o Gestor apenas visualiza; só o Encarregado altera.
+
+    Devolve uma função para chamar no ``before_request`` do blueprint: para quem
+    não é Encarregado, bloqueia (403) qualquer método que não seja GET/HEAD e
+    também as páginas de formulário listadas em ``endpoints_de_edicao`` — o
+    gestor não deve nem abrir a tela de edição. Exportações (GET) continuam
+    liberadas: exportar é visualizar.
+    """
+    def checar():
+        if current_user.is_encarregado:
+            return
+        if request.method not in ("GET", "HEAD") or request.endpoint in endpoints_de_edicao:
+            abort(403)
+    return checar
 
 
 def papeis(*permitidos):

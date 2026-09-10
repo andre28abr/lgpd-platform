@@ -16,6 +16,12 @@
   </div>
   <div class="card">
     <h3>Atendimento</h3>
+    {% if not current_user.is_encarregado %}
+    <p class="muted">Status: <strong>{{ pedido.status_label }}</strong></p>
+    <p class="muted">Responsável: <strong>{{ pedido.responsavel.nome if pedido.responsavel else '—' }}</strong></p>
+    {% if pedido.observacoes %}<p class="muted">Observações: {{ pedido.observacoes }}</p>{% endif %}
+    <p class="muted">Somente leitura — o atendimento é conduzido pelo Encarregado.</p>
+    {% else %}
     <form method="post" class="form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label class="campo">
@@ -34,6 +40,7 @@
       <label class="campo"><span>Observações</span><textarea name="observacoes" rows="3">{{ pedido.observacoes or '' }}</textarea></label>
       <button class="btn btn-primary" type="submit">Salvar</button>
     </form>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

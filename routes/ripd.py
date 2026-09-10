@@ -4,18 +4,19 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import fk_do_tenant, papeis
+from routes._helpers import fk_do_tenant, gestor_somente_leitura, papeis
 from services.auditoria import registrar
 from services.ripd_pdf import ripd_pdf
 
 bp = Blueprint("ripd", __name__, url_prefix="/ripd")
+_somente_leitura = gestor_somente_leitura()  # o gestor abre o relatório em modo leitura
 
 
 @bp.before_request
 @login_required
 @papeis(models.PAPEL_ENCARREGADO, models.PAPEL_GESTOR)
 def _restringe():
-    pass
+    _somente_leitura()
 
 
 def _do_empresa(rid):
@@ -38,6 +39,8 @@ def listar():
 @bp.route("/<int:rid>/editar", methods=["GET", "POST"])
 def form(rid=None):
     relatorio = _do_empresa(rid) if rid else None
+    if relatorio is None and not current_user.is_encarregado:
+        abort(403)  # criar é do Encarregado; o gestor só abre relatórios existentes
     ropas = (
         models.RopaRegistro.query.filter_by(empresa_id=current_user.empresa_id)
         .order_by(models.RopaRegistro.atividade).all()

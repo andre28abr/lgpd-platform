@@ -3,7 +3,7 @@
 {% block conteudo %}
 <div class="page-head">
   <h1>Gestão de privacidade</h1>
-  <p class="muted">Módulos de operação da LGPD no dia a dia.</p>
+  <p class="muted">Módulos de operação da LGPD no dia a dia.{% if not current_user.is_encarregado %} Como Gestor, você acompanha em modo leitura — as alterações são feitas pelo Encarregado.{% endif %}</p>
 </div>
 <div class="grid grid-3">
   <a class="card card-link" href="{{ url_for('diagnostico.index') }}"><h3>Diagnóstico</h3><p class="muted">{{ c.diagnosticos }} realizado(s). Maturidade em privacidade.</p></a>

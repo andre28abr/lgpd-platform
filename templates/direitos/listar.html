@@ -4,9 +4,9 @@
 <div class="page-head">
   <div class="section-head">
     <h1>Direitos do titular</h1>
-    <a class="btn btn-primary" href="{{ url_for('direitos.novo') }}">Registrar pedido</a>
+    {% if current_user.is_encarregado %}<a class="btn btn-primary" href="{{ url_for('direitos.novo') }}">Registrar pedido</a>{% endif %}
   </div>
-  <p class="muted">Atendimento aos pedidos dos titulares (Art. 18), com prazo e status.</p>
+  <p class="muted">Atendimento aos pedidos dos titulares (Art. 18), com prazo e status.{% if not current_user.is_encarregado %} Somente leitura — o atendimento é conduzido pelo Encarregado.{% endif %}</p>
 </div>
 <div class="card">
   <table class="tabela">
@@ -22,7 +22,7 @@
           {% else %}<span class="pill">{{ p.status_label }}</span>{% endif %}
         </td>
         <td>{{ p.prazo.strftime('%d/%m/%Y') if p.prazo else '—' }}</td>
-        <td><a href="{{ url_for('direitos.gerir', pid=p.id) }}">Gerir</a></td>
+        <td><a href="{{ url_for('direitos.gerir', pid=p.id) }}">{{ 'Gerir' if current_user.is_encarregado else 'Ver' }}</a></td>
       </tr>
       {% else %}
       <tr><td colspan="5" class="muted">Nenhum pedido registrado.</td></tr>

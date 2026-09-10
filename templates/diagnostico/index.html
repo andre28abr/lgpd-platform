@@ -6,6 +6,7 @@
   <p class="muted">Um retrato rápido da maturidade em privacidade, com score por dimensão e plano de ação.</p>
 </div>
 
+{% if current_user.is_encarregado %}
 <div class="card">
   <h3>Novo diagnóstico</h3>
   <p class="muted">Poucas afirmações em "não / parcial / sim". Ao final, você recebe um score e recomendações.</p>
@@ -21,6 +22,9 @@
     <button class="btn btn-primary" type="submit">Iniciar diagnóstico</button>
   </form>
 </div>
+{% else %}
+<p class="muted">Somente leitura — o diagnóstico é aplicado pelo Encarregado; você acompanha os resultados.</p>
+{% endif %}
 
 {% if grafico %}
 <div class="section-head"><h2>Evolução do score</h2></div>
@@ -50,7 +54,8 @@
         <td>{{ d.nivel or '—' }}</td>
         <td>
           {% if d.status == 'concluido' %}<a href="{{ url_for('diagnostico.resultado', diag_id=d.id) }}">Ver</a>
-          {% else %}<a href="{{ url_for('diagnostico.responder', diag_id=d.id) }}">Continuar</a>{% endif %}
+          {% elif current_user.is_encarregado %}<a href="{{ url_for('diagnostico.responder', diag_id=d.id) }}">Continuar</a>
+          {% else %}<span class="muted">em andamento</span>{% endif %}
         </td>
       </tr>
       {% else %}

@@ -3,11 +3,13 @@
 {% block conteudo %}
 <div class="page-head">
   <a class="link-voltar" href="{{ url_for('ripd.listar') }}">Voltar ao RIPD</a>
-  <h1>{{ 'Editar RIPD' if relatorio else 'Novo RIPD' }}</h1>
+  <h1>{% if not current_user.is_encarregado %}RIPD{% elif relatorio %}Editar RIPD{% else %}Novo RIPD{% endif %}</h1>
+  {% if not current_user.is_encarregado %}<p class="muted">Somente leitura — alterações são feitas pelo Encarregado.</p>{% endif %}
 </div>
 <div class="card">
   <form method="post" class="form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if not current_user.is_encarregado %}<fieldset disabled style="border:0;padding:0;margin:0;display:contents;">{% endif %}
     <label class="campo"><span>Título</span><input type="text" name="titulo" value="{{ relatorio.titulo if relatorio else '' }}" required></label>
     <label class="campo">
       <span>Tratamento relacionado (ROPA)</span>
@@ -41,7 +43,9 @@
     <label class="campo"><span>Medidas de mitigação</span><textarea name="medidas" rows="3">{{ relatorio.medidas if relatorio else '' }}</textarea></label>
     <label class="campo"><span>Conclusão</span><textarea name="conclusao" rows="2">{{ relatorio.conclusao if relatorio else '' }}</textarea></label>
     <label class="campo-check"><input type="checkbox" name="status" value="concluido" {% if relatorio and relatorio.status == 'concluido' %}checked{% endif %}> Marcar como concluído</label>
+    {% if current_user.is_encarregado %}
     <button class="btn btn-primary" type="submit">Salvar RIPD</button>
+    {% else %}</fieldset>{% endif %}
   </form>
 </div>
 {% endblock %}
