@@ -90,10 +90,16 @@ def _slug_livre(base):
 
 
 def _email_livre(email, antigo_id):
+    """E-mail é único na plataforma: em conflito, sufixa (+impN, +impN-2, ...) até achar um livre."""
     if not models.Usuario.query.filter_by(email=email).first():
         return email
     local, _, dominio = email.partition("@")
-    return f"{local}+imp{antigo_id}@{dominio}"
+    n = 1
+    while True:
+        candidato = f"{local}+imp{antigo_id}@{dominio}" if n == 1 else f"{local}+imp{antigo_id}-{n}@{dominio}"
+        if not models.Usuario.query.filter_by(email=candidato).first():
+            return candidato
+        n += 1
 
 
 def importar_empresa(dados: dict, slug: str | None = None):

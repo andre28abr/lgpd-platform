@@ -51,22 +51,31 @@ def _carregar_ou_gerar_secret_key(instance_path: str) -> str:
     nunca seja um valor público conhecido — o que permitiria forjar sessões.
     Em produção, prefira definir SECRET_KEY no ambiente.
     """
-    os.makedirs(instance_path, exist_ok=True)
     caminho = os.path.join(instance_path, "secret_key")
     try:
+        os.makedirs(instance_path, exist_ok=True)
         with open(caminho, encoding="utf-8") as f:
             chave = f.read().strip()
         if chave:
             return chave
     except FileNotFoundError:
         pass
+    except OSError:
+        # Diretório sem permissão (ex.: volume montado como root): não derruba o boot —
+        # usa chave só desta execução e avisa. As sessões não sobrevivem a reinícios.
+        import logging
+        logging.getLogger(__name__).warning(
+            "instance/ sem permissão de leitura; usando SECRET_KEY temporária. Defina SECRET_KEY no ambiente.")
+        return secrets.token_hex(32)
     chave = secrets.token_hex(32)
-    with open(caminho, "w", encoding="utf-8") as f:
-        f.write(chave)
     try:
+        with open(caminho, "w", encoding="utf-8") as f:
+            f.write(chave)
         os.chmod(caminho, 0o600)
     except OSError:
-        pass
+        import logging
+        logging.getLogger(__name__).warning(
+            "Não foi possível persistir instance/secret_key; usando chave temporária. Defina SECRET_KEY no ambiente.")
     return chave
 
 

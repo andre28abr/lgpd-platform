@@ -12,8 +12,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+# instance/ (SQLite, secret_key, uploads) e logs/ ficam fora do git (.dockerignore); precisam
+# existir na imagem já com o dono certo — assim o volume nomeado montado em /app/instance
+# herda a permissão do appuser em vez de nascer como root e derrubar o boot.
 RUN chmod +x entrypoint.sh \
  && useradd --create-home --uid 10001 appuser \
+ && mkdir -p /app/instance /app/logs \
  && chown -R appuser:appuser /app
 USER appuser
 
