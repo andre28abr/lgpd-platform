@@ -128,6 +128,19 @@ def usuario_editar(usuario_id):
             registrar("2fa_resetado", usuario.email)
             db.session.commit()
             flash("Verificação em duas etapas do usuário foi resetada.", "ok")
+        elif acao == "anonimizar":
+            from services.ciclo_vida import anonimizar_usuario
+            if usuario.id == current_user.id:
+                flash("Você não pode anonimizar a si mesmo.", "erro")
+            elif usuario.ativo:
+                flash("Inative o usuário antes de anonimizá-lo.", "erro")
+            elif usuario.anonimizado_em:
+                flash("Este usuário já foi anonimizado.", "aviso")
+            else:
+                registrar("usuario_anonimizado", f"id={usuario.id}")  # sem o e-mail: ele deixa de existir
+                anonimizar_usuario(usuario)
+                db.session.commit()
+                flash("Usuário anonimizado. O histórico estatístico foi mantido sem identificação.", "ok")
         else:
             papel = request.form.get("papel") or usuario.papel
             ativo = request.form.get("ativo") == "on"
@@ -326,6 +339,18 @@ def auditoria():
     logs = query.offset((pagina - 1) * por_pagina).limit(por_pagina).all()
     return render_template("admin/auditoria.html", logs=logs, pagina=pagina, total=total,
                            tem_proxima=(pagina * por_pagina < total))
+
+
+@bp.route("/exportar.json")
+def exportar_json():
+    """Portabilidade/backup do tenant: tudo da empresa, sem segredos, em JSON."""
+    import json
+
+    from services.portabilidade import exportar_empresa
+    registrar("empresa_exportada", "json", commit=True)
+    conteudo = json.dumps(exportar_empresa(current_user.empresa), ensure_ascii=False, indent=2)
+    return Response(conteudo, mimetype="application/json",
+                    headers={"Content-Disposition": f"attachment; filename={current_user.empresa.slug}.json"})
 
 
 @bp.route("/emails")

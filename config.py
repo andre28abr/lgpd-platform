@@ -82,6 +82,12 @@ class Config:
     # Feed de legislação/notícias (RSS). Vazio => mostra só as referências fixas.
     FEED_URL = os.environ.get("FEED_URL", "")
 
+    # Retenção dos dados da PRÓPRIA plataforma (`flask expurgar`). 0 = não expurgar.
+    # A trilha de auditoria costuma ter retenção longa (accountability); a caixa
+    # de saída de e-mails guarda links de reset e nomes — retenção curta.
+    AUDITORIA_RETENCAO_DIAS = int(os.environ.get("AUDITORIA_RETENCAO_DIAS", "0"))
+    EMAILS_RETENCAO_DIAS = int(os.environ.get("EMAILS_RETENCAO_DIAS", "90"))
+
     # Anexos (evidências). O limite do request protege contra upload gigante;
     # o limite por arquivo é o que o usuário vê. Diretório configurável (testes).
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024

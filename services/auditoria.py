@@ -75,13 +75,31 @@ def registrar(acao, detalhe=None, usuario=None, empresa_id=None, commit=False):
         return None
 
 
+ACAO_EXPURGO = "auditoria_expurgada"
+
+
+def ancora_do_expurgo():
+    """Hash do último registro removido pelo expurgo mais recente (ou None).
+
+    O expurgo (``ciclo_vida.expurgar``) grava um marcador ``ancora=<hash>``; a
+    verificação parte dele, para o primeiro registro sobrevivente continuar
+    conferindo contra o seu antecessor real, mesmo depois de apagado.
+    """
+    marcador = (models.AuditLog.query.filter_by(acao=ACAO_EXPURGO)
+                .order_by(models.AuditLog.id.desc()).first())
+    if marcador and marcador.detalhe and "ancora=" in marcador.detalhe:
+        valor = marcador.detalhe.split("ancora=", 1)[1].split()[0]
+        return valor if valor and valor != "-" else None
+    return None
+
+
 def verificar_cadeia():
     """Percorre a trilha em ordem e reconfere cada hash.
 
     Retorna ``(ok, verificados, id_quebrado)``. Registros anteriores à cadeia
     (hash None) são pulados, mas continuam contando como "anterior" dos próximos.
     """
-    anterior, verificados = None, 0
+    anterior, verificados = ancora_do_expurgo(), 0
     for log in models.AuditLog.query.order_by(models.AuditLog.id).all():
         if log.hash is not None:
             if log.hash != _hash_do_log(log, anterior):

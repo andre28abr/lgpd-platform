@@ -274,6 +274,50 @@ def register_cli(app: Flask) -> None:
                 enviados, _ = notificar_prazos(empresa)
                 print(f"  e-mail: {enviados} Encarregado(s) notificado(s)")
 
+    @app.cli.command("expurgar")
+    @click.option("--auditoria", type=int, default=None, help="Dias de retenção da auditoria (padrão: config).")
+    @click.option("--emails", type=int, default=None, help="Dias de retenção da caixa de saída (padrão: config).")
+    def expurgar(auditoria, emails):
+        """Aplica a política de retenção aos dados da própria plataforma (auditoria e e-mails)."""
+        from services.ciclo_vida import expurgar as _expurgar
+        dias_a = app.config["AUDITORIA_RETENCAO_DIAS"] if auditoria is None else auditoria
+        dias_e = app.config["EMAILS_RETENCAO_DIAS"] if emails is None else emails
+        n_logs, n_emails = _expurgar(dias_a, dias_e)
+        print(f"Expurgo: {n_logs} registro(s) de auditoria (> {dias_a} d) "
+              f"e {n_emails} e-mail(s) (> {dias_e} d) removidos.")
+
+    @app.cli.command("exportar-empresa")
+    @click.argument("slug")
+    @click.argument("arquivo", type=click.Path(dir_okay=False))
+    def exportar_empresa_cmd(slug, arquivo):
+        """Exporta uma empresa inteira (sem segredos) para um JSON."""
+        import json
+
+        import models
+        from services.portabilidade import exportar_empresa
+        empresa = models.Empresa.query.filter_by(slug=slug).first()
+        if not empresa:
+            print(f"Empresa '{slug}' não encontrada.")
+            raise SystemExit(1)
+        with open(arquivo, "w", encoding="utf-8") as f:
+            json.dump(exportar_empresa(empresa), f, ensure_ascii=False, indent=2)
+        print(f"Exportado para {arquivo}.")
+
+    @app.cli.command("importar-empresa")
+    @click.argument("arquivo", type=click.Path(exists=True, dir_okay=False))
+    @click.option("--slug", default=None, help="Slug da nova empresa (padrão: o do arquivo).")
+    def importar_empresa_cmd(arquivo, slug):
+        """Cria uma NOVA empresa a partir de um JSON exportado."""
+        import json
+
+        from services.portabilidade import importar_empresa
+        with open(arquivo, encoding="utf-8") as f:
+            dados = json.load(f)
+        empresa, avisos = importar_empresa(dados, slug=slug)
+        print(f"Empresa '{empresa.nome}' importada como '{empresa.slug}'.")
+        for aviso in avisos:
+            print(f"  aviso: {aviso}")
+
     @app.cli.command("demo-reset")
     @click.option("--confirmar", is_flag=True, help="Confirma a recriação (apaga TODOS os dados).")
     @click.option("--forcar", is_flag=True, help="Permite rodar fora do SQLite (cuidado).")

@@ -39,5 +39,9 @@
     <h3>E-mails</h3>
     <p class="muted">Caixa de saída: reset de senha, reavaliações e pedidos — visível mesmo sem SMTP.</p>
   </a>
+  <a class="card card-link" href="{{ url_for('admin.exportar_json') }}">
+    <h3>Exportar dados</h3>
+    <p class="muted">Tudo da empresa em JSON (sem senhas) — portabilidade e backup. Importe com <code>flask importar-empresa</code>.</p>
+  </a>
 </div>
 {% endblock %}

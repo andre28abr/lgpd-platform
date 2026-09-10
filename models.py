@@ -203,6 +203,8 @@ class Usuario(UserMixin, db.Model):
     # Bloqueio por tentativas de login
     tentativas_falhas = db.Column(db.Integer, default=0, nullable=False, server_default=text("0"))
     bloqueado_ate = db.Column(db.DateTime)
+    # Quando o usuário foi anonimizado (nome/e-mail removidos; histórico estatístico mantido).
+    anonimizado_em = db.Column(db.DateTime)
 
     empresa = db.relationship("Empresa", back_populates="usuarios")
     setor = db.relationship("Setor", back_populates="usuarios")

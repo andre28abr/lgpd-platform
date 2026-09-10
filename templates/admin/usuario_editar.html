@@ -4,7 +4,7 @@
 <div class="page-head">
   <a class="link-voltar" href="{{ url_for('admin.usuarios') }}">Voltar aos usuários</a>
   <h1>{{ usuario.nome }}</h1>
-  <p class="muted">{{ usuario.email }}</p>
+  <p class="muted">{{ usuario.email }}{% if usuario.anonimizado_em %} — <span class="pill">anonimizado em {{ usuario.anonimizado_em.strftime('%d/%m/%Y') }}</span>{% endif %}</p>
 </div>
 
 <div class="grid grid-2">
@@ -53,5 +53,17 @@
       <button class="btn btn-ghost" type="submit" style="border-color:var(--borda);color:var(--erro);" {% if not usuario.mfa_ativo %}disabled{% endif %}>Resetar 2FA</button>
     </form>
   </div>
+
+  {% if not usuario.anonimizado_em and usuario.id != current_user.id %}
+  <div class="card">
+    <h3>Anonimizar (desligamento)</h3>
+    <p class="muted">Remove nome, e-mail, senha e 2FA de forma irreversível, mantendo provas, certificados e auditoria apenas pelo número interno — a LGPD aplicada à própria plataforma (Art. 12 e 16). O usuário precisa estar inativo.</p>
+    <form method="post" data-confirm="Anonimizar este usuário? A ação é irreversível.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="acao" value="anonimizar">
+      <button class="btn btn-ghost" type="submit" style="border-color:var(--borda);color:var(--erro);" {% if usuario.ativo %}disabled{% endif %}>Anonimizar usuário</button>
+    </form>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
