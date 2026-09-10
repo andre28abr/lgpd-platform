@@ -4,6 +4,7 @@ Expõe ``create_app()`` (factory) e ``app`` no nível do módulo para que tanto 
 Flask CLI (``flask --app app``) quanto o gunicorn (``gunicorn app:app``) funcionem.
 """
 import os
+import secrets
 import sys
 
 from dotenv import load_dotenv
@@ -42,9 +43,44 @@ def _set_sqlite_pragma(dbapi_connection, _):
         cur.close()
 
 
+def _carregar_ou_gerar_secret_key(instance_path: str) -> str:
+    """Chave secreta persistida em instance/secret_key (fora do git).
+
+    Mantém a demo "um comando" funcionando sem env var e garante que a chave
+    nunca seja um valor público conhecido — o que permitiria forjar sessões.
+    Em produção, prefira definir SECRET_KEY no ambiente.
+    """
+    os.makedirs(instance_path, exist_ok=True)
+    caminho = os.path.join(instance_path, "secret_key")
+    try:
+        with open(caminho, encoding="utf-8") as f:
+            chave = f.read().strip()
+        if chave:
+            return chave
+    except FileNotFoundError:
+        pass
+    chave = secrets.token_hex(32)
+    with open(caminho, "w", encoding="utf-8") as f:
+        f.write(chave)
+    try:
+        os.chmod(caminho, 0o600)
+    except OSError:
+        pass
+    return chave
+
+
 def create_app(config_object: type = Config) -> Flask:
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_object)
+
+    if not app.config.get("SECRET_KEY"):
+        app.config["SECRET_KEY"] = _carregar_ou_gerar_secret_key(app.instance_path)
+        app.logger.warning("SECRET_KEY não definida no ambiente; usando chave gerada em instance/secret_key.")
+
+    saltos = app.config.get("PROXY_FIX_HOPS", 0)
+    if saltos:
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=saltos, x_proto=saltos, x_host=saltos)
 
     uri = resolve_database_uri(app.instance_path)
     app.config["SQLALCHEMY_DATABASE_URI"] = uri
@@ -121,12 +157,13 @@ def create_app(config_object: type = Config) -> Flask:
         from flask_login import current_user
         try:
             uid = current_user.id if current_user.is_authenticated else "-"
-        except Exception:
+        except Exception:  # noqa: BLE001 — o log da requisição nunca pode derrubar a resposta
             uid = "-"
         rid = getattr(g, "request_id", "-")
         resp.headers.setdefault("X-Request-ID", rid)
-        app.logger.info("request id=%s method=%s path=%s status=%s user=%s",
-                        rid, request.method, request.path, resp.status_code, uid)
+        if request.path != "/saude":  # healthcheck a cada 30 s não precisa poluir o log
+            app.logger.info("request id=%s method=%s path=%s status=%s user=%s",
+                            rid, request.method, request.path, resp.status_code, uid)
         return resp
 
     @app.context_processor
@@ -143,22 +180,22 @@ def create_app(config_object: type = Config) -> Flask:
         return Markup(bleach.linkify(limpo))
 
     # ── Blueprints ──
-    from routes.auth import bp as auth_bp
-    from routes.painel import bp as painel_bp
-    from routes.trilhas import bp as trilhas_bp
-    from routes.provas import bp as provas_bp
-    from routes.certificados import bp as certificados_bp
-    from routes.ranking import bp as ranking_bp
     from routes.admin import bp as admin_bp
+    from routes.auth import bp as auth_bp
+    from routes.certificados import bp as certificados_bp
     from routes.diagnostico import bp as diagnostico_bp
-    from routes.perfil import bp as perfil_bp
-    from routes.ropa import bp as ropa_bp
     from routes.direitos import bp as direitos_bp
-    from routes.ripd import bp as ripd_bp
     from routes.incidentes import bp as incidentes_bp
     from routes.legislacao import bp as legislacao_bp
+    from routes.painel import bp as painel_bp
+    from routes.perfil import bp as perfil_bp
     from routes.privacidade import bp as privacidade_bp
+    from routes.provas import bp as provas_bp
     from routes.publico import bp as publico_bp
+    from routes.ranking import bp as ranking_bp
+    from routes.ripd import bp as ripd_bp
+    from routes.ropa import bp as ropa_bp
+    from routes.trilhas import bp as trilhas_bp
 
     for bp in (auth_bp, painel_bp, trilhas_bp, provas_bp, certificados_bp,
                ranking_bp, admin_bp, diagnostico_bp, perfil_bp, ropa_bp, direitos_bp,
@@ -178,6 +215,12 @@ def create_app(config_object: type = Config) -> Flask:
     def _400(e):
         desc = getattr(e, "description", "Requisição inválida.")
         return render_template("erro.html", codigo=400, mensagem=desc), 400
+
+    @app.errorhandler(500)
+    def _500(_):
+        # O traceback já foi registrado no log pelo Flask; o usuário vê só a página amigável.
+        return render_template("erro.html", codigo=500,
+                               mensagem="Ocorreu um erro inesperado. Tente novamente em instantes."), 500
 
     # ── Comandos CLI ──
     register_cli(app)
@@ -202,12 +245,23 @@ def register_cli(app: Flask) -> None:
         """Notifica colaboradores com certificação vencida/vencendo (rodar via cron)."""
         import models
         from services.notificacoes import notificar_reavaliacoes
-        total = 0
+        total_enviados = 0
         for empresa in models.Empresa.query.filter_by(ativo=True).all():
-            notificados, _ = notificar_reavaliacoes(empresa)
-            total += notificados
-            print(f"{empresa.slug}: {notificados} notificado(s)")
-        print(f"Total: {total}")
+            enviados, total = notificar_reavaliacoes(empresa)
+            total_enviados += enviados
+            print(f"{empresa.slug}: {enviados} de {total} pendente(s) notificado(s)")
+        print(f"Total enviado: {total_enviados}")
+
+    @app.cli.command("auditoria-verificar")
+    def auditoria_verificar():
+        """Confere a cadeia de hashes da trilha de auditoria (detecta adulteração)."""
+        from services.auditoria import verificar_cadeia
+        ok, total, quebrado_em = verificar_cadeia()
+        if ok:
+            print(f"Cadeia íntegra: {total} registro(s) verificado(s).")
+        else:
+            print(f"CADEIA QUEBRADA no registro id={quebrado_em} ({total} verificado(s) até ali).")
+            raise SystemExit(1)
 
 
 app = create_app()
@@ -233,4 +287,6 @@ if __name__ == "__main__":
     if abrir and os.environ.get("WERKZEUG_RUN_MAIN") != "true":
         _abrir_navegador(url)
 
-    app.run(host="127.0.0.1", port=porta, debug=True)
+    # Debugger/reloader do Werkzeug só com FLASK_DEBUG=1 — nunca ligado por padrão.
+    debug = os.environ.get("FLASK_DEBUG", "0").strip().lower() in ("1", "true", "yes", "on")
+    app.run(host="127.0.0.1", port=porta, debug=debug)

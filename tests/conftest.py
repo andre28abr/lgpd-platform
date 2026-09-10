@@ -7,14 +7,18 @@ import os
 import tempfile
 
 os.environ["LGPD_SKIP_DOTENV"] = "1"
+# Padrão: SQLite temporário. O CI define LGPD_TEST_DATABASE_URL para rodar a
+# mesma suíte contra um PostgreSQL de verdade.
 _db_fd, _db_path = tempfile.mkstemp(suffix=".db")
-os.environ["DATABASE_URL"] = "sqlite:///" + _db_path
+os.environ["DATABASE_URL"] = os.environ.get("LGPD_TEST_DATABASE_URL") or ("sqlite:///" + _db_path)
+# Chave fixa nos testes: evita gravar instance/secret_key do projeto durante a suíte.
+os.environ.setdefault("SECRET_KEY", "chave-de-teste-nao-usar-em-producao-0123456789abcdef")
 
 import pytest  # noqa: E402
 
+import seed as seed_mod  # noqa: E402
 from app import app as flask_app  # noqa: E402
 from extensions import db, limiter  # noqa: E402
-import seed as seed_mod  # noqa: E402
 
 
 @pytest.fixture(scope="session")

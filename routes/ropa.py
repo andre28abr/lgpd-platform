@@ -1,11 +1,12 @@
 """ROPA — Registro das operações de tratamento (Art. 37)."""
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import papeis
+from routes._helpers import fk_do_tenant, papeis
 from services.auditoria import registrar
+from services.ropa_export import ropa_excel, ropa_pdf
 
 bp = Blueprint("ropa", __name__, url_prefix="/ropa")
 
@@ -47,8 +48,7 @@ def form(reg_id=None):
             if reg is None:
                 reg = models.RopaRegistro(empresa_id=current_user.empresa_id)
                 db.session.add(reg)
-            setor_id = request.form.get("setor_id") or None
-            reg.setor_id = int(setor_id) if setor_id else None
+            reg.setor_id = fk_do_tenant(models.Setor, request.form.get("setor_id"), current_user.empresa_id)
             reg.atividade = atividade
             reg.titulares = (request.form.get("titulares") or "").strip()
             reg.categorias_dados = request.form.get("categorias_dados") or ""
@@ -73,3 +73,27 @@ def excluir(reg_id):
     db.session.commit()
     flash("Registro excluído.", "ok")
     return redirect(url_for("ropa.listar"))
+
+
+def _registros_da_empresa():
+    return (
+        models.RopaRegistro.query.filter_by(empresa_id=current_user.empresa_id)
+        .order_by(models.RopaRegistro.atividade).all()
+    )
+
+
+@bp.route("/exportar.xlsx")
+def exportar_xlsx():
+    registrar("ropa_exportado", "xlsx", commit=True)
+    return send_file(
+        ropa_excel(current_user.empresa, _registros_da_empresa()),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True, download_name="ropa.xlsx",
+    )
+
+
+@bp.route("/relatorio.pdf")
+def relatorio_pdf():
+    registrar("ropa_exportado", "pdf", commit=True)
+    return send_file(ropa_pdf(current_user.empresa, _registros_da_empresa()),
+                     mimetype="application/pdf", as_attachment=False, download_name="ropa.pdf")

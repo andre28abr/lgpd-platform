@@ -1,10 +1,17 @@
 """Avaliações: sorteio de questões, aplicação, correção e emissão de certificado."""
 import random
 import secrets
-from datetime import datetime
+from datetime import timedelta
 
 from flask import (
-    Blueprint, abort, current_app, flash, redirect, render_template, request, url_for,
+    Blueprint,
+    abort,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
 )
 from flask_login import current_user, login_required
 from sqlalchemy import or_
@@ -14,6 +21,9 @@ from extensions import db
 from utils import agora_utc
 
 bp = Blueprint("provas", __name__, url_prefix="/provas")
+
+# Folga (segundos) além do tempo limite para o envio automático do navegador chegar.
+TOLERANCIA_ENVIO_S = 30
 
 
 def _sortear_questoes(empresa_id, area, quantidade):
@@ -106,6 +116,19 @@ def realizar(prova_id):
 def responder(prova_id):
     prova = _prova_do_usuario(prova_id)
     if prova.status == "concluida":
+        return redirect(url_for("provas.resultado", prova_id=prova.id))
+
+    # Cronômetro validado no servidor: o countdown do navegador é só apoio visual.
+    # Envio após o prazo (mais a tolerância) encerra a prova sem corrigir as respostas.
+    if prova.expira_em and agora_utc() > prova.expira_em + timedelta(seconds=TOLERANCIA_ENVIO_S):
+        for item in prova.itens:
+            item.alternativa_escolhida_id = None
+            item.correta = False
+        prova.nota, prova.aprovado = 0.0, False
+        prova.status, prova.finalizado_em = "concluida", agora_utc()
+        db.session.commit()
+        flash("Tempo esgotado. A prova foi encerrada e as respostas enviadas após o prazo "
+              "não foram consideradas.", "erro")
         return redirect(url_for("provas.resultado", prova_id=prova.id))
 
     for item in prova.itens:

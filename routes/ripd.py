@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import papeis
+from routes._helpers import fk_do_tenant, papeis
 from services.auditoria import registrar
 from services.ripd_pdf import ripd_pdf
 
@@ -51,8 +51,10 @@ def form(rid=None):
             if relatorio is None:
                 relatorio = models.Ripd(empresa_id=current_user.empresa_id)
                 db.session.add(relatorio)
-            ropa_id = request.form.get("ropa_id") or None
-            relatorio.ropa_id = int(ropa_id) if ropa_id else None
+            # Só aceita um ROPA da própria empresa (evita ler dado de outro tenant via PDF).
+            relatorio.ropa_id = fk_do_tenant(
+                models.RopaRegistro, request.form.get("ropa_id"), current_user.empresa_id,
+            )
             relatorio.titulo = titulo
             relatorio.descricao_tratamento = request.form.get("descricao_tratamento") or ""
             relatorio.probabilidade = _faixa(request.form.get("probabilidade"))

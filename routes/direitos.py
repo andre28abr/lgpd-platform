@@ -6,7 +6,7 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import papeis
+from routes._helpers import fk_do_tenant, papeis
 from services.auditoria import registrar
 from services.notificacoes import notificar_novo_pedido, notificar_pedido_concluido
 from utils import agora_utc
@@ -70,8 +70,9 @@ def gerir(pid):
         if status in models.STATUS_PEDIDO_LABELS:
             pedido.status = status
             pedido.concluido_em = agora_utc() if status in ("concluido", "recusado") else None
-        resp = request.form.get("responsavel_id") or None
-        pedido.responsavel_id = int(resp) if resp else None
+        pedido.responsavel_id = fk_do_tenant(
+            models.Usuario, request.form.get("responsavel_id"), current_user.empresa_id,
+        )
         pedido.observacoes = request.form.get("observacoes") or ""
         registrar("pedido_titular_atualizado", f"{pedido.id} -> {pedido.status}")
         db.session.commit()

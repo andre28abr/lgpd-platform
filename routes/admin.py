@@ -1,11 +1,21 @@
 """Administração do tenant (somente Encarregado): setores, usuários, trilhas e questões."""
-from flask import Blueprint, Response, abort, flash, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    Response,
+    abort,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 
 import models
 from extensions import db
-from routes._helpers import papeis, slugify
+from routes._helpers import fk_do_tenant, papeis, slugify
 from security import validar_senha
 from services.auditoria import registrar
 from services.metricas import pendencias_empresa
@@ -67,7 +77,7 @@ def usuarios():
         email = (request.form.get("email") or "").strip().lower()
         senha = request.form.get("senha") or ""
         papel = request.form.get("papel") or models.PAPEL_COLABORADOR
-        setor_id = request.form.get("setor_id") or None
+        setor_id = fk_do_tenant(models.Setor, request.form.get("setor_id"), empresa_id)
         erro_senha = validar_senha(senha)
 
         if not nome or not email or papel not in models.PAPEIS:
@@ -78,8 +88,7 @@ def usuarios():
             flash("Já existe um usuário com este e-mail.", "erro")
         else:
             novo = models.Usuario(
-                empresa_id=empresa_id, nome=nome, email=email, papel=papel,
-                setor_id=int(setor_id) if setor_id else None,
+                empresa_id=empresa_id, nome=nome, email=email, papel=papel, setor_id=setor_id,
             )
             novo.definir_senha(senha)
             db.session.add(novo)
@@ -121,11 +130,12 @@ def usuario_editar(usuario_id):
             flash("Verificação em duas etapas do usuário foi resetada.", "ok")
         else:
             papel = request.form.get("papel") or usuario.papel
-            setor_id = request.form.get("setor_id") or None
             ativo = request.form.get("ativo") == "on"
             if papel in models.PAPEIS:
                 usuario.papel = papel
-            usuario.setor_id = int(setor_id) if setor_id else None
+            usuario.setor_id = fk_do_tenant(
+                models.Setor, request.form.get("setor_id"), current_user.empresa_id,
+            )
             usuario.ativo = ativo
             registrar("usuario_editado", usuario.email)
             db.session.commit()
@@ -268,7 +278,13 @@ def configuracoes():
     empresa = current_user.empresa
     if request.method == "POST":
         empresa.mfa_obrigatorio = request.form.get("mfa_obrigatorio") == "on"
-        registrar("config_alterada", f"mfa_obrigatorio={empresa.mfa_obrigatorio}")
+        remetente = (request.form.get("email_remetente") or "").strip().lower()
+        if remetente and "@" not in remetente:
+            flash("Informe um e-mail de remetente válido (ou deixe em branco).", "erro")
+            return redirect(url_for("admin.configuracoes"))
+        empresa.email_remetente = remetente or None
+        registrar("config_alterada",
+                  f"mfa_obrigatorio={empresa.mfa_obrigatorio} email_remetente={empresa.email_remetente or '-'}")
         db.session.commit()
         flash("Configurações salvas.", "ok")
         return redirect(url_for("admin.configuracoes"))
@@ -283,8 +299,12 @@ def reavaliacoes():
 
 @bp.route("/reavaliacoes/notificar", methods=["POST"])
 def reavaliacoes_notificar():
-    notificados, _ = notificar_reavaliacoes(current_user.empresa)
-    flash(f"{notificados} colaborador(es) notificado(s) (ou registrados em modo dry-run).", "ok")
+    enviados, total = notificar_reavaliacoes(current_user.empresa)
+    if current_app.config.get("MAIL_SERVER"):
+        flash(f"{enviados} de {total} colaborador(es) notificado(s) por e-mail.", "ok")
+    else:
+        flash(f"Modo dry-run (sem MAIL_SERVER): {total} pendência(s) registrada(s) no log, "
+              "nenhum e-mail enviado.", "aviso")
     return redirect(url_for("admin.reavaliacoes"))
 
 
@@ -314,10 +334,10 @@ def auditoria_csv():
     buf = io.StringIO()
     escritor = csv.writer(buf)
     escritor.writerow(["data", "usuario", "acao", "detalhe", "ip"])
-    for l in registros:
+    for log in registros:
         escritor.writerow([
-            l.criado_em.strftime("%Y-%m-%d %H:%M:%S"),
-            l.usuario.email if l.usuario else "", l.acao, l.detalhe or "", l.ip or "",
+            log.criado_em.strftime("%Y-%m-%d %H:%M:%S"),
+            log.usuario.email if log.usuario else "", log.acao, log.detalhe or "", log.ip or "",
         ])
     return Response(buf.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": "attachment; filename=auditoria.csv"})

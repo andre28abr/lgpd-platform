@@ -38,7 +38,9 @@ def _as_bool(value: str) -> bool:
 
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-inseguro-troque-em-producao"
+    # Nunca uma constante pública: sem SECRET_KEY no ambiente, o app factory gera
+    # uma chave aleatória e a persiste em instance/ (ver app.py).
+    SECRET_KEY = os.environ.get("SECRET_KEY") or ""
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -46,7 +48,12 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = _as_bool(os.environ.get("SESSION_COOKIE_SECURE"))
-    PERMANENT_SESSION_LIFETIME = 60 * 60 * 8  # 8 horas
+    PERMANENT_SESSION_LIFETIME = 60 * 60 * 8  # 8 horas (ativado com session.permanent no login)
+
+    # Atrás de proxy reverso (nginx, load balancer): número de saltos confiáveis
+    # em X-Forwarded-For/Proto/Host. 0 = sem proxy (padrão local/Docker direto).
+    # Sem isso, rate limit e IP da auditoria enxergariam só o IP do proxy.
+    PROXY_FIX_HOPS = int(os.environ.get("PROXY_FIX_HOPS", "0"))
 
     # Regras de avaliação / certificação
     NOTA_CORTE = int(os.environ.get("NOTA_CORTE", "70"))
