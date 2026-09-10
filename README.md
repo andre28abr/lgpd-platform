@@ -6,7 +6,7 @@
 ![Status](https://img.shields.io/badge/status-MVP%20%2B%20fase%202%20completos-success)
 ![Python](https://img.shields.io/badge/python-3.12+-blue)
 ![Flask](https://img.shields.io/badge/flask-3-000000)
-![Tests](https://img.shields.io/badge/tests-101%20passando-success)
+![Tests](https://img.shields.io/badge/tests-121%20passando-success)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-orange)
 
 ---
@@ -62,7 +62,7 @@ Atualmente em **transição de carreira, com disponibilidade imediata**, esta pl
 - **Roda leve:** SQLite com um comando para demo/local; **Postgres + Redis via Docker** para produção. Mesmo código (SQLAlchemy).
 - **Segurança séria:** 2FA (TOTP) com códigos de recuperação e modo obrigatório por empresa, bloqueio de conta, CSRF, CSP/HSTS, **trilha de auditoria encadeada por hash** (adulteração detectável) + CSV, reset de senha por link, e **logging estruturado com request-id**.
 - **Conteúdo com fonte:** 229 questões e 7 trilhas ancoradas **exclusivamente** no texto da lei (Planalto) e nas normas e guias da ANPD — o dossiê de fontes está em [`docs/fontes-lgpd.md`](docs/fontes-lgpd.md) e o banco revisável em [`docs/banco-questoes.csv`](docs/banco-questoes.csv).
-- **Testada como produto:** 101 testes, incluindo **isolamento multi-tenant com duas empresas**, e CI que roda lint, auditoria de dependências e a suíte inteira **também em PostgreSQL**.
+- **Testada como produto:** 121 testes, incluindo **isolamento multi-tenant com duas empresas**, e CI que roda lint, auditoria de dependências e a suíte inteira **também em PostgreSQL**.
 - **Demonstrável sem infraestrutura:** duas empresas de exemplo, dados do Pilar 2 em situações reais (pedido atrasado, incidente sem ANPD), caixa de saída de e-mails visível sem SMTP, portal público do titular e `flask demo-reset` para recomeçar.
 
 **Stack:** Python 3.12+ · Flask 3 · SQLAlchemy 2 + Alembic · Flask-Login · Flask-Limiter (memória/Redis) · Jinja · ReportLab (PDF) · openpyxl (Excel) · pyotp + qrcode (2FA) · feedparser · Markdown + Bleach · Gunicorn · SQLite/PostgreSQL · Docker.
@@ -229,7 +229,7 @@ docs/             dossiê de fontes oficiais e CSV de revisão do banco
 templates/        Jinja (53 templates)
 static/           CSS e JS
 seed.py           atualiza a biblioteca (idempotente) + empresas de demonstração
-tests/            suíte pytest (101 testes, inclui isolamento multi-tenant com 2 empresas)
+tests/            suíte pytest (121 testes, inclui isolamento multi-tenant com 2 empresas)
 migrations/       Alembic (12 migrações), validadas em SQLite e PostgreSQL
 ruff.toml         lint (E/F/W/I/B/BLE)
 Dockerfile · docker-compose.yml · entrypoint.sh    empacotamento (web + Postgres + Redis, healthcheck)
@@ -273,7 +273,7 @@ docker compose up --build      # http://localhost:8080
 
 ```bash
 pip install -r requirements-dev.txt
-pytest                          # 101 testes (SQLite temporário)
+pytest                          # 121 testes (SQLite temporário)
 pytest --cov=. --cov-fail-under=85
 ruff check .                    # lint
 pip-audit -r requirements.txt   # vulnerabilidades conhecidas
@@ -327,7 +327,7 @@ verificação pública de certificados em `/certificados/verificar/<código>`.
 
 - **~10.800 linhas** (5.213 Python + 1.531 de conteúdo curado + 1.554 de testes + 2.113 templates + 362 CSS/JS), sem contar venv/migrações.
 - **82 rotas**, **21 modelos**, **17 blueprints**, **19 serviços**, **53 templates**, **229 questões**, **7 trilhas**.
-- **101 testes** (auth, CSRF, RBAC e papéis, **isolamento multi-tenant**, provas 7+3 e cronômetro, certificados, 2FA e reautenticação, lockout, reset de senha, diagnóstico e comparativo, ROPA export/import, RIPD, portal do titular, prazos e KPIs, anexos, anonimização e expurgo, export/import da empresa, PDFs, auditoria encadeada, métricas sem N+1, **checklist do banco de questões**), cobertura ~90%.
+- **121 testes** (auth, CSRF, RBAC e papéis, **isolamento multi-tenant**, provas 7+3 e cronômetro, certificados, 2FA e reautenticação, lockout, reset de senha, diagnóstico e comparativo, ROPA export/import, RIPD, portal do titular, prazos e KPIs, anexos, anonimização e expurgo, export/import da empresa, PDFs, auditoria encadeada, métricas sem N+1, **checklist do banco de questões**), cobertura ~90%.
 - **12 migrações** Alembic, validadas em SQLite **e PostgreSQL 16** no CI; **lint** (ruff) e **pip-audit** a cada push.
 
 ---

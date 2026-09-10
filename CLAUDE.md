@@ -21,7 +21,7 @@ flask db upgrade        # aplica migrações (ou: flask init-db p/ SQLite rápid
 flask seed              # empresa de demo — login dpo@acme.com.br / senha lgpd1234
 
 python app.py           # http://127.0.0.1:8080 (abre o navegador sozinho; FLASK_DEBUG=1 p/ reloader)
-pytest                  # 101 testes (SQLite temp) · LGPD_TEST_DATABASE_URL=postgresql://... p/ Postgres
+pytest                  # 121 testes (SQLite temp) · LGPD_TEST_DATABASE_URL=postgresql://... p/ Postgres
 flask demo-reset --confirmar   # recria a demo do zero (só SQLite)
 ruff check . && pip-audit -r requirements.txt   # o CI exige os dois limpos + cobertura ≥ 85%
 
@@ -87,5 +87,5 @@ docker compose up --build   # alternativa: web + PostgreSQL + Redis
 
 Pilar 1 (educacional) + Pilar 2 (gestão de privacidade) completos. Ciclo de auditoria de
 segurança, hardening e melhorias de produto/conteúdo concluído em set/2026 (detalhes no
-Roadmap do README). 101 testes, 12 migrações, 229 questões, CI (ruff · pip-audit ·
+Roadmap do README). 121 testes, 12 migrações, 229 questões, CI (ruff · pip-audit ·
 pytest 3.12/3.13 · PostgreSQL 16). Licença AGPL-3.0. Repo: https://github.com/andre28abr/lgpd-platform
