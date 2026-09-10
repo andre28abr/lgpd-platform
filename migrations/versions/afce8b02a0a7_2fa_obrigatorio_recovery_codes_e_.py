@@ -5,9 +5,8 @@ Revises: 3fd207b0885f
 Create Date: 2026-06-17 18:53:48.406675
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'afce8b02a0a7'
@@ -22,7 +21,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('usuario_id', sa.Integer(), nullable=False),
     sa.Column('code_hash', sa.String(length=255), nullable=False),
-    sa.Column('usado', sa.Boolean(), server_default=sa.text('0'), nullable=False),
+    sa.Column('usado', sa.Boolean(), server_default=sa.false(), nullable=False),
     sa.Column('criado_em', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['usuario_id'], ['usuarios.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -36,7 +35,7 @@ def upgrade():
         batch_op.create_foreign_key('fk_diagnosticos_setor', 'setores', ['setor_id'], ['id'])
 
     with op.batch_alter_table('empresas', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('mfa_obrigatorio', sa.Boolean(), server_default=sa.text('0'), nullable=False))
+        batch_op.add_column(sa.Column('mfa_obrigatorio', sa.Boolean(), server_default=sa.false(), nullable=False))
 
     # ### end Alembic commands ###
 

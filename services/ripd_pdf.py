@@ -7,6 +7,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from services.pdf_utils import esc
+
 
 def ripd_pdf(empresa, r) -> io.BytesIO:
     buf = io.BytesIO()
@@ -15,14 +17,14 @@ def ripd_pdf(empresa, r) -> io.BytesIO:
 
     el = [
         Paragraph("Relatório de Impacto à Proteção de Dados (RIPD)", st["Title"]),
-        Paragraph(empresa.nome, st["Heading2"]),
-        Paragraph(r.titulo, st["Heading3"]),
+        Paragraph(esc(empresa.nome), st["Heading2"]),
+        Paragraph(esc(r.titulo), st["Heading3"]),
         Spacer(1, 4 * mm),
     ]
     if r.ropa:
-        el.append(Paragraph(f"<b>Tratamento (ROPA):</b> {r.ropa.atividade}", st["Normal"]))
+        el.append(Paragraph(f"<b>Tratamento (ROPA):</b> {esc(r.ropa.atividade)}", st["Normal"]))
     if r.descricao_tratamento:
-        el.append(Paragraph(f"<b>Descrição:</b> {r.descricao_tratamento}", st["Normal"]))
+        el.append(Paragraph(f"<b>Descrição:</b> {esc(r.descricao_tratamento)}", st["Normal"]))
     el.append(Spacer(1, 4 * mm))
 
     tabela = [
@@ -41,10 +43,10 @@ def ripd_pdf(empresa, r) -> io.BytesIO:
     el.append(Spacer(1, 4 * mm))
 
     if r.medidas:
-        el.append(Paragraph(f"<b>Medidas de mitigação:</b> {r.medidas}", st["Normal"]))
+        el.append(Paragraph(f"<b>Medidas de mitigação:</b> {esc(r.medidas)}", st["Normal"]))
         el.append(Spacer(1, 3 * mm))
     if r.conclusao:
-        el.append(Paragraph(f"<b>Conclusão:</b> {r.conclusao}", st["Normal"]))
+        el.append(Paragraph(f"<b>Conclusão:</b> {esc(r.conclusao)}", st["Normal"]))
 
     doc.build(el)
     buf.seek(0)

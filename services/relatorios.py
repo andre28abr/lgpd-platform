@@ -8,6 +8,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from services.metricas import ranking_empresa, resumo_empresa
+from services.pdf_utils import celula_planilha, esc
 
 _CABECALHO = ["#", "Setor", "Área", "Colaboradores", "Avaliados", "Em dia (%)", "Média"]
 
@@ -21,11 +22,11 @@ def ranking_excel(empresa) -> io.BytesIO:
     ws.append(_CABECALHO)
     for r in ranking_empresa(empresa.id):
         ws.append([
-            r["posicao"], r["setor"].nome, r["setor"].area_label,
+            r["posicao"], celula_planilha(r["setor"].nome), r["setor"].area_label,
             r["n"], r["avaliados"], r["pct_em_dia"],
             r["media"] if r["media"] is not None else "",
         ])
-    for coluna, largura in zip("ABCDEFG", (5, 28, 26, 14, 12, 12, 10)):
+    for coluna, largura in zip("ABCDEFG", (5, 28, 26, 14, 12, 12, 10), strict=True):
         ws.column_dimensions[coluna].width = largura
     buf = io.BytesIO()
     wb.save(buf)
@@ -41,7 +42,7 @@ def conformidade_pdf(empresa) -> io.BytesIO:
 
     elementos = [
         Paragraph("Relatório de conformidade — LGPD", estilos["Title"]),
-        Paragraph(empresa.nome, estilos["Heading2"]),
+        Paragraph(esc(empresa.nome), estilos["Heading2"]),
         Paragraph(
             f"Conformidade geral: <b>{dados['pct_conformidade']}%</b> — "
             f"{dados['colaboradores']} colaboradores em {dados['setores']} setores.",

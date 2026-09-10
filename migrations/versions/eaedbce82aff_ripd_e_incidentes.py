@@ -5,9 +5,8 @@ Revises: 7a06145bac02
 Create Date: 2026-06-17 21:55:44.633681
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'eaedbce82aff'
@@ -27,9 +26,9 @@ def upgrade():
     sa.Column('dados_afetados', sa.Text(), nullable=True),
     sa.Column('num_titulares', sa.Integer(), nullable=True),
     sa.Column('risco', sa.String(length=20), nullable=True),
-    sa.Column('comunicado_anpd', sa.Boolean(), server_default=sa.text('0'), nullable=False),
+    sa.Column('comunicado_anpd', sa.Boolean(), server_default=sa.false(), nullable=False),
     sa.Column('comunicado_anpd_em', sa.DateTime(), nullable=True),
-    sa.Column('comunicado_titulares', sa.Boolean(), server_default=sa.text('0'), nullable=False),
+    sa.Column('comunicado_titulares', sa.Boolean(), server_default=sa.false(), nullable=False),
     sa.Column('comunicado_titulares_em', sa.DateTime(), nullable=True),
     sa.Column('medidas', sa.Text(), nullable=True),
     sa.Column('status', sa.String(length=20), nullable=False),

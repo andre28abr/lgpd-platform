@@ -7,6 +7,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from services.pdf_utils import esc
+
 
 def diagnostico_pdf(empresa, diag, score, nivel, linhas, plano) -> io.BytesIO:
     buf = io.BytesIO()
@@ -15,15 +17,15 @@ def diagnostico_pdf(empresa, diag, score, nivel, linhas, plano) -> io.BytesIO:
 
     elementos = [
         Paragraph("Diagnóstico de maturidade — LGPD", estilos["Title"]),
-        Paragraph(empresa.nome, estilos["Heading2"]),
+        Paragraph(esc(empresa.nome), estilos["Heading2"]),
         Paragraph(f"Score: <b>{score}%</b> — Nível: <b>{nivel}</b>", estilos["Heading3"]),
         Paragraph(f"Realizado em {diag.finalizado_em.strftime('%d/%m/%Y')}.", estilos["Normal"]),
         Spacer(1, 6 * mm),
     ]
 
     tabela = [["Dimensão", "%"]]
-    for l in linhas:
-        tabela.append([l["label"], f"{l['pct']}%"])
+    for linha in linhas:
+        tabela.append([linha["label"], f"{linha['pct']}%"])
     t = Table(tabela, repeatRows=1, colWidths=[130 * mm, 30 * mm])
     t.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f4c5c")),

@@ -5,9 +5,8 @@ Revises: 40992fa1d33a
 Create Date: 2026-06-17 15:10:46.004469
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '3fd207b0885f'
@@ -23,7 +22,8 @@ def upgrade():
 
     with op.batch_alter_table('usuarios', schema=None) as batch_op:
         batch_op.add_column(sa.Column('totp_secret', sa.String(length=64), nullable=True))
-        batch_op.add_column(sa.Column('mfa_ativo', sa.Boolean(), server_default=sa.text('0'), nullable=False))
+        # sa.false(): booleano portável (DEFAULT 0 é rejeitado pelo PostgreSQL).
+        batch_op.add_column(sa.Column('mfa_ativo', sa.Boolean(), server_default=sa.false(), nullable=False))
         batch_op.add_column(sa.Column('tentativas_falhas', sa.Integer(), server_default=sa.text('0'), nullable=False))
         batch_op.add_column(sa.Column('bloqueado_ate', sa.DateTime(), nullable=True))
 

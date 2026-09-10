@@ -9,8 +9,13 @@ _PENDENTES = {"vencido", "sem_certificado", "vencendo"}
 
 
 def notificar_reavaliacoes(empresa) -> tuple[int, int]:
-    """Notifica colaboradores com certificação pendente. Retorna (notificados, total)."""
-    pendentes = [l for l in pendencias_empresa(empresa.id) if l["status"] in _PENDENTES]
+    """Notifica colaboradores com certificação pendente.
+
+    Retorna ``(enviados, total)`` — ``enviados`` conta só e-mails de fato entregues
+    ao SMTP (zero em dry-run), para o número reportado ser verdadeiro.
+    """
+    pendentes = [p for p in pendencias_empresa(empresa.id) if p["status"] in _PENDENTES]
+    enviados = 0
     for linha in pendentes:
         usuario = linha["usuario"]
         rotulo = linha["status"].replace("_", " ")
@@ -20,11 +25,15 @@ def notificar_reavaliacoes(empresa) -> tuple[int, int]:
             f"Acesse a plataforma para refazer a avaliação e manter sua conformidade em dia.\n\n"
             f"Empresa: {empresa.nome}"
         )
-        enviar(usuario.email, "LGPD: sua certificação precisa de atenção", corpo)
+        if enviar(usuario.email, "LGPD: sua certificação precisa de atenção", corpo,
+                  remetente=empresa.email_remetente):
+            enviados += 1
 
-    registrar("reavaliacoes_notificadas", f"{len(pendentes)} colaborador(es)", empresa_id=empresa.id)
+    total = len(pendentes)
+    registrar("reavaliacoes_notificadas", f"{enviados} de {total} colaborador(es) por e-mail",
+              empresa_id=empresa.id)
     db.session.commit()
-    return len(pendentes), len(pendentes)
+    return enviados, total
 
 
 def _encarregados_emails(empresa_id):
@@ -38,17 +47,19 @@ def notificar_novo_pedido(pedido, empresa):
     corpo = (f"Novo pedido de titular: {pedido.tipo_label}.\n"
              f"Titular: {pedido.nome_titular}. Prazo de atendimento: {prazo}.")
     for email in _encarregados_emails(empresa.id):
-        enviar(email, "LGPD: novo pedido de titular", corpo)
+        enviar(email, "LGPD: novo pedido de titular", corpo, remetente=empresa.email_remetente)
 
 
 def notificar_pedido_concluido(pedido):
     if pedido.contato and "@" in pedido.contato:
+        empresa = db.session.get(models.Empresa, pedido.empresa_id)
         enviar(pedido.contato, "LGPD: seu pedido foi atendido",
-               f"Olá, {pedido.nome_titular}. Seu pedido ({pedido.tipo_label}) foi concluído.")
+               f"Olá, {pedido.nome_titular}. Seu pedido ({pedido.tipo_label}) foi concluído.",
+               remetente=empresa.email_remetente if empresa else None)
 
 
 def notificar_novo_incidente(incidente, empresa):
     corpo = (f"Incidente registrado: {incidente.titulo}.\n"
              f"Risco: {incidente.risco_label}. Avalie a comunicação à ANPD e aos titulares (Art. 48).")
     for email in _encarregados_emails(empresa.id):
-        enviar(email, "LGPD: novo incidente de segurança", corpo)
+        enviar(email, "LGPD: novo incidente de segurança", corpo, remetente=empresa.email_remetente)
