@@ -40,6 +40,7 @@ A **Plataforma LGPD** nasceu como exercício pessoal de portfólio com três obj
 - **Tradução de exigências LGPD em funcionalidades**: banco de questões e trilhas ancorados nos artigos; diagnóstico de maturidade; **ROPA (Art. 37)**; **RIPD (Art. 38)**; **direitos do titular (Art. 18)**; **incidentes (Art. 48)**; trilha de auditoria (Art. 6º, X).
 - **Curadoria do conteúdo**: trilhas por setor (RH, Financeiro, TI, Marketing…) e banco de questões com base legal e explicação.
 - **Decisões de trade-off**: SQLite *default* × Postgres-ready, 2FA opt-in × obrigatório por empresa, rate limit em memória × Redis, banco curado de questões × geração por IA.
+- **Ciclo de auditoria e hardening (set/2026)**: condução de uma auditoria completa de segurança e correção do projeto — isolamento multi-tenant, chave secreta, integridade da prova, migrações em PostgreSQL, trilha de auditoria à prova de adulteração — com decisão explícita de manter o SQLite como padrão por ser uma plataforma de demonstração, e de tornar o caminho PostgreSQL verdadeiro em vez de removê-lo. O processo (achado → correção → teste de regressão → CI) é o material de base para o e-book sobre GRC do autor.
 
 **Etapa de codificação:** orquestrada com auxílio de IA generativa, sob direção e revisão do autor. A stack (Python/Flask, SQLAlchemy, Jinja, etc.) foi escolhida pela aderência ao caso de uso e pela exposição prévia em estudos, não por domínio prático prévio em escrita de código de produção.
 

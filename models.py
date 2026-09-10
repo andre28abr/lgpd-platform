@@ -149,6 +149,7 @@ class Empresa(db.Model):
     slug = db.Column(db.String(80), unique=True, nullable=False, index=True)
     ativo = db.Column(db.Boolean, default=True, nullable=False)
     mfa_obrigatorio = db.Column(db.Boolean, default=False, nullable=False, server_default=false())
+    email_remetente = db.Column(db.String(255))  # remetente das notificações; None = MAIL_FROM
     criado_em = db.Column(db.DateTime, default=agora_utc, nullable=False)
 
     setores = db.relationship("Setor", back_populates="empresa", cascade="all, delete-orphan")
@@ -484,6 +485,9 @@ class AuditLog(db.Model):
     detalhe = db.Column(db.String(255))
     ip = db.Column(db.String(45))
     criado_em = db.Column(db.DateTime, default=agora_utc, nullable=False, index=True)
+    # SHA-256 deste registro encadeado ao anterior — adulteração quebra a cadeia
+    # (conferível com `flask auditoria-verificar`). None = registro anterior à cadeia.
+    hash = db.Column(db.String(64))
 
     usuario = db.relationship("Usuario")
 

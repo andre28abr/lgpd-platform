@@ -4,7 +4,11 @@
 <div class="page-head">
   <div class="section-head">
     <h1>ROPA — Registro de tratamentos</h1>
-    <a class="btn btn-primary" href="{{ url_for('ropa.form') }}">Novo registro</a>
+    <div class="cert-acoes" style="margin-top:0;">
+      <a class="btn btn-ghost" href="{{ url_for('ropa.exportar_xlsx') }}">Exportar Excel</a>
+      <a class="btn btn-ghost" href="{{ url_for('ropa.relatorio_pdf') }}">Exportar PDF</a>
+      <a class="btn btn-primary" href="{{ url_for('ropa.form') }}">Novo registro</a>
+    </div>
   </div>
   <p class="muted">Inventário das operações de tratamento de dados pessoais (Art. 37).</p>
 </div>

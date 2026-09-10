@@ -6,7 +6,7 @@
 ![Status](https://img.shields.io/badge/status-MVP%20%2B%20fase%202%20completos-success)
 ![Python](https://img.shields.io/badge/python-3.12+-blue)
 ![Flask](https://img.shields.io/badge/flask-3-000000)
-![Tests](https://img.shields.io/badge/tests-35%20passando-success)
+![Tests](https://img.shields.io/badge/tests-61%20passando-success)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-orange)
 
 ---
@@ -60,7 +60,8 @@ Atualmente em **transição de carreira, com disponibilidade imediata**, esta pl
 - **Provas por sorteio** com banco curado, **cronômetro**, **certificado com validade + verificação pública por código** e **reavaliação periódica**.
 - **Diagnóstico de maturidade** com score por dimensão, **plano de ação** e **gráfico de evolução**.
 - **Roda leve:** SQLite com um comando para demo/local; **Postgres + Redis via Docker** para produção. Mesmo código (SQLAlchemy).
-- **Segurança séria:** 2FA (TOTP) com códigos de recuperação e modo obrigatório por empresa, bloqueio de conta, CSRF, CSP, **trilha de auditoria** + CSV e **logging estruturado com request-id**.
+- **Segurança séria:** 2FA (TOTP) com códigos de recuperação e modo obrigatório por empresa, bloqueio de conta, CSRF, CSP/HSTS, **trilha de auditoria encadeada por hash** (adulteração detectável) + CSV, reset de senha por link, e **logging estruturado com request-id**.
+- **Testada como produto:** 61 testes, incluindo **isolamento multi-tenant com duas empresas**, e CI que roda lint, auditoria de dependências e a suíte inteira **também em PostgreSQL**.
 
 **Stack:** Python 3.12+ · Flask 3 · SQLAlchemy 2 + Alembic · Flask-Login · Flask-Limiter (memória/Redis) · Jinja · ReportLab (PDF) · openpyxl (Excel) · pyotp + qrcode (2FA) · feedparser · Markdown + Bleach · Gunicorn · SQLite/PostgreSQL · Docker.
 
@@ -109,7 +110,7 @@ Esta plataforma endereça as duas: **treina e certifica os times por setor** (co
 
 ### Pilar 2 — Gestão de privacidade (hub "Privacidade")
 - **Diagnóstico de maturidade**: questionário em 5 dimensões, score ponderado, nível, **plano de ação**, **PDF** e **gráfico de evolução**.
-- **ROPA** (Art. 37): inventário de tratamentos por setor (dados, finalidade, **base legal**, retenção, compartilhamento).
+- **ROPA** (Art. 37): inventário de tratamentos por setor (dados, finalidade, **base legal**, retenção, compartilhamento), com **exportação em Excel e PDF** — o artefato que o Encarregado entrega à ANPD ou a auditores.
 - **RIPD** (Art. 38): matriz de risco (probabilidade × impacto), risco residual, medidas e **PDF**.
 - **Direitos do titular** (Art. 18): registro de pedidos com **prazo**, status e responsável.
 - **Incidentes** (Art. 48): registro e resposta, com **comunicação à ANPD e aos titulares**.
@@ -121,7 +122,7 @@ Esta plataforma endereça as duas: **treina e certifica os times por setor** (co
 - **Configurações** de segurança (ex.: 2FA obrigatório por empresa) e **auditoria** consultável + CSV.
 
 ### Segurança
-2FA (TOTP) com **códigos de recuperação**, reset pelo Encarregado e **modo obrigatório**; bloqueio de conta por tentativas; CSRF por sessão; cabeçalhos/CSP; senha com hash; HTML sanitizado; **logging estruturado com request-id**; escopo multi-tenant em todas as consultas.
+2FA (TOTP) com **códigos de recuperação**, reset pelo Encarregado, **modo obrigatório** e reautenticação por senha para desativar; bloqueio de conta por tentativas (sem enumeração de contas); **reset de senha por link** de uso único; CSRF por sessão; cabeçalhos/CSP/HSTS; senha com hash; HTML sanitizado; **trilha de auditoria encadeada por hash** (`flask auditoria-verificar`); **logging estruturado com request-id**; escopo multi-tenant em todas as consultas **e nas chaves estrangeiras vindas de formulários**.
 
 ---
 
@@ -179,9 +180,16 @@ O banco é **agnóstico**: SQLite por padrão (zero config), PostgreSQL quando `
 - **Bloqueio temporário** de conta após tentativas malsucedidas + rate limit no login.
 - **Cabeçalhos** de segurança: CSP, X-Frame-Options, nosniff, Referrer-Policy.
 - **Senhas** com hash (Werkzeug); **HTML** das trilhas sanitizado (Bleach).
-- **Trilha de auditoria** das ações sensíveis (Art. 6º, X) com exportação CSV.
+- **Trilha de auditoria** das ações sensíveis (Art. 6º, X) com exportação CSV, **encadeada por SHA-256**: alterar ou apagar um registro por fora do sistema quebra a cadeia, e `flask auditoria-verificar` aponta onde. Best-effort — nunca derruba a ação auditada.
 - **Logging estruturado** (logfmt) com `request-id` e rotação de arquivo.
-- **Multi-tenant**: toda consulta escopada por `empresa_id`; 404 em acesso cruzado.
+- **Multi-tenant**: toda consulta escopada por `empresa_id`; 404 em acesso cruzado. Ids de chave estrangeira enviados em formulários (`setor_id`, `ropa_id`, `responsavel_id`) são validados contra a empresa do usuário (`fk_do_tenant`). Testado com **duas empresas reais** na suíte.
+- **Chave secreta nunca pública**: sem `SECRET_KEY` no ambiente, o app gera uma aleatória e persiste em `instance/` (fora do git).
+- **Cronômetro da prova validado no servidor** — o countdown do navegador é só apoio visual.
+- **Reset de senha por link** assinado (1 h, uso único), com resposta idêntica para e-mail conhecido ou não.
+- **Reautenticação por senha** para desativar o 2FA ou regenerar códigos de recuperação.
+- **PDFs à prova de marcação**: texto livre escapado antes do ReportLab (um `<` no texto não derruba a exportação).
+- **Atrás de proxy**: `PROXY_FIX_HOPS` faz rate limit e IP da auditoria enxergarem o cliente real. `SESSION_COOKIE_SECURE=true` liga também o HSTS.
+- **Dependências pinadas e auditadas** (`pip-audit` no CI); `HEALTHCHECK` no container via `/saude`, que pinga o banco.
 
 ---
 
@@ -195,14 +203,16 @@ security.py       CSRF, cabeçalhos e política de senha
 models.py         18 modelos multi-tenant
 utils.py          helpers (datetime UTC timezone-safe)
 routes/           16 blueprints
-services/         métricas, PDFs, diagnóstico, e-mail, 2FA, auditoria, relatórios
-templates/        Jinja (46 templates)
+services/         métricas, PDFs, diagnóstico, e-mail, 2FA, auditoria encadeada, relatórios,
+                  export do ROPA, reset de senha
+templates/        Jinja (48 templates)
 static/           CSS e JS
 seed.py           biblioteca curada + empresa de demonstração
-tests/            suíte pytest (35 testes)
-migrations/       Alembic (6 migrações)
-Dockerfile · docker-compose.yml · entrypoint.sh    empacotamento (web + Postgres + Redis)
-.github/workflows/ci.yml                            CI (pytest)
+tests/            suíte pytest (61 testes, inclui isolamento multi-tenant com 2 empresas)
+migrations/       Alembic (7 migrações), validadas em SQLite e PostgreSQL
+ruff.toml         lint (E/F/W/I/B/BLE)
+Dockerfile · docker-compose.yml · entrypoint.sh    empacotamento (web + Postgres + Redis, healthcheck)
+.github/workflows/ci.yml                            CI: ruff · pip-audit · pytest 3.12/3.13 (cobertura ≥ 85%) · PostgreSQL 16
 ```
 
 ---
@@ -234,12 +244,18 @@ python app.py           # http://127.0.0.1:8080
 docker compose up --build      # http://localhost:8080
 ```
 
-### Testes
+### Testes e qualidade
 
 ```bash
 pip install -r requirements-dev.txt
-pytest
+pytest                          # 61 testes (SQLite temporário)
+pytest --cov=. --cov-fail-under=85
+ruff check .                    # lint
+pip-audit -r requirements.txt   # vulnerabilidades conhecidas
+flask auditoria-verificar       # integridade da trilha de auditoria
 ```
+
+Para rodar a mesma suíte contra um PostgreSQL: `LGPD_TEST_DATABASE_URL=postgresql://... pytest` (é o que o CI faz).
 
 ### Contas de demonstração (senha `lgpd1234`)
 
@@ -256,10 +272,12 @@ pytest
 
 | Variável | Padrão | Função |
 |---|---|---|
-| `SECRET_KEY` | dev | Assina sessões e tokens CSRF |
+| `SECRET_KEY` | gerada em `instance/` | Assina sessões, CSRF e links de reset. Defina explicitamente em produção |
 | `DATABASE_URL` | SQLite local | Vazio = SQLite; `postgresql://…` = Postgres |
 | `RATELIMIT_STORAGE_URI` | `memory://` | `redis://…` para multi-worker |
-| `SESSION_COOKIE_SECURE` | `false` | `true` atrás de HTTPS |
+| `SESSION_COOKIE_SECURE` | `false` | `true` atrás de HTTPS (liga também o HSTS) |
+| `PROXY_FIX_HOPS` | `0` | Saltos confiáveis de `X-Forwarded-*` atrás de proxy reverso (normalmente `1`) |
+| `FLASK_DEBUG` | `0` | `1` liga debugger/reloader no `python app.py` (só desenvolvimento) |
 | `TEMPO_PROVA_MIN` | `15` | Tempo da prova (0 = sem limite) |
 | `NOTA_CORTE` / `QUESTOES_POR_PROVA` | `70` / `8` | Regras de avaliação |
 | `CERT_VALIDADE_DIAS` | `365` | Validade do certificado |
@@ -271,16 +289,18 @@ pytest
 
 ## Métricas do código
 
-- **~6.300 linhas** (4.317 Python + 1.685 templates + 329 CSS/JS), sem contar venv/migrações.
-- **65 rotas**, **18 modelos**, **16 blueprints**, **10 serviços**, **46 templates**.
-- **35 testes** (auth, CSRF, RBAC, provas, certificados, 2FA, lockout, diagnóstico, ROPA, RIPD, direitos, incidentes, exports), **6 migrações** Alembic, **CI** no GitHub Actions.
+- **~7.300 linhas** (4.263 Python + 943 de testes + 1.754 templates + 329 CSS/JS), sem contar venv/migrações.
+- **69 rotas**, **18 modelos**, **16 blueprints**, **13 serviços**, **48 templates**.
+- **61 testes** (auth, CSRF, RBAC, **isolamento multi-tenant**, provas e cronômetro, certificados, 2FA e reautenticação, lockout, reset de senha, diagnóstico, ROPA e export, RIPD, direitos, incidentes, PDFs, auditoria encadeada, métricas sem N+1), cobertura ~90%.
+- **7 migrações** Alembic, validadas em SQLite **e PostgreSQL 16** no CI; **lint** (ruff) e **pip-audit** a cada push.
 
 ---
 
 ## Roadmap
 
 - **Concluído:** Pilar 1 (educacional) e Pilar 2 (gestão de privacidade) completos; qualidade (testes, 2FA, auditoria, logging); empacotamento Docker.
-- **Próximos passos:** PDF do diagnóstico por setor com comparativo; integração de e-mail transacional além do *dry-run*; webhooks/portal público para o titular abrir pedidos; painel de indicadores (KPIs de privacidade).
+- **Concluído (set/2026) — ciclo de auditoria de segurança e hardening:** chave secreta nunca pública; validação de FKs cross-tenant; cronômetro no servidor; migrações funcionando em PostgreSQL; PDFs com escape; métricas sem N+1; sessão com prazo real; ProxyFix/HSTS; reautenticação no 2FA; reset de senha; export do ROPA; auditoria encadeada por hash; CI com lint, pip-audit e Postgres.
+- **Próximos passos:** escopo do papel *Gestor* ao próprio setor nos módulos do Pilar 2 (hoje enxerga a empresa toda); e-mail transacional além do *dry-run*; portal público para o titular abrir pedidos; PDF do diagnóstico por setor com comparativo; painel de KPIs de privacidade; e-mail único por empresa (hoje é global).
 
 ---
 

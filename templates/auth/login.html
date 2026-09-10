@@ -22,7 +22,10 @@
       <button class="btn btn-primary btn-bloco" type="submit">Entrar</button>
     </form>
 
-    <p class="muted" style="margin-top:1rem; text-align:center;">Não tem conta? <a href="{{ url_for('auth.cadastro') }}">Criar conta da empresa</a></p>
+    <p class="muted" style="margin-top:1rem; text-align:center;">
+      <a href="{{ url_for('auth.esqueci_senha') }}">Esqueci minha senha</a> ·
+      Não tem conta? <a href="{{ url_for('auth.cadastro') }}">Criar conta da empresa</a>
+    </p>
 
     <details class="demo">
       <summary>Contas de demonstração</summary>
