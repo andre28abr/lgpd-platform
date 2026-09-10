@@ -72,8 +72,10 @@ def form(rid=None):
             flash("RIPD salvo.", "ok")
             return redirect(url_for("ripd.listar"))
 
+    from services.anexos import listar as listar_anexos
+    anexos = listar_anexos("ripd", relatorio.id, current_user.empresa_id) if relatorio else []
     return render_template("ripd/form.html", relatorio=relatorio, ropas=ropas,
-                           niveis=models.RISCO_NIVEIS)
+                           niveis=models.RISCO_NIVEIS, anexos=anexos)
 
 
 @bp.route("/<int:rid>/excluir", methods=["POST"])

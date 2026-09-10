@@ -182,6 +182,7 @@ def create_app(config_object: type = Config) -> Flask:
 
     # ── Blueprints ──
     from routes.admin import bp as admin_bp
+    from routes.anexos import bp as anexos_bp
     from routes.auth import bp as auth_bp
     from routes.certificados import bp as certificados_bp
     from routes.diagnostico import bp as diagnostico_bp
@@ -200,7 +201,7 @@ def create_app(config_object: type = Config) -> Flask:
 
     for bp in (auth_bp, painel_bp, trilhas_bp, provas_bp, certificados_bp,
                ranking_bp, admin_bp, diagnostico_bp, perfil_bp, ropa_bp, direitos_bp,
-               ripd_bp, incidentes_bp, legislacao_bp, privacidade_bp, publico_bp):
+               ripd_bp, incidentes_bp, legislacao_bp, privacidade_bp, publico_bp, anexos_bp):
         app.register_blueprint(bp)
 
     # ── Páginas de erro ──
@@ -216,6 +217,11 @@ def create_app(config_object: type = Config) -> Flask:
     def _400(e):
         desc = getattr(e, "description", "Requisição inválida.")
         return render_template("erro.html", codigo=400, mensagem=desc), 400
+
+    @app.errorhandler(413)
+    def _413(_):
+        return render_template("erro.html", codigo=413,
+                               mensagem="Arquivo grande demais para o envio."), 413
 
     @app.errorhandler(500)
     def _500(_):

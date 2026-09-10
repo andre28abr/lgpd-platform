@@ -87,5 +87,7 @@ def gerir(pid):
         models.Usuario.query.filter_by(empresa_id=current_user.empresa_id, ativo=True)
         .order_by(models.Usuario.nome).all()
     )
+    from services.anexos import listar as listar_anexos
     return render_template("direitos/gerir.html", pedido=pedido,
-                           status_opcoes=models.STATUS_PEDIDO, usuarios=usuarios)
+                           status_opcoes=models.STATUS_PEDIDO, usuarios=usuarios,
+                           anexos=listar_anexos("pedido", pedido.id, current_user.empresa_id))

@@ -100,5 +100,7 @@ def gerir(iid):
         db.session.commit()
         flash("Incidente atualizado.", "ok")
         return redirect(url_for("incidentes.gerir", iid=inc.id))
+    from services.anexos import listar as listar_anexos
     return render_template("incidentes/gerir.html", inc=inc,
-                           status_opcoes=models.STATUS_INCIDENTE, niveis=models.RISCO_NIVEIS)
+                           status_opcoes=models.STATUS_INCIDENTE, niveis=models.RISCO_NIVEIS,
+                           anexos=listar_anexos("incidente", inc.id, current_user.empresa_id))

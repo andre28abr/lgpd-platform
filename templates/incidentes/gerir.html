@@ -49,4 +49,5 @@
     {% endif %}
   </div>
 </div>
+{% with alvo_tipo='incidente', alvo_id=inc.id %}{% include "_anexos.html" %}{% endwith %}
 {% endblock %}

@@ -44,4 +44,5 @@
     {% endif %}
   </div>
 </div>
+{% with alvo_tipo='pedido', alvo_id=pedido.id %}{% include "_anexos.html" %}{% endwith %}
 {% endblock %}

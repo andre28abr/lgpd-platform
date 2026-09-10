@@ -13,6 +13,8 @@ _db_fd, _db_path = tempfile.mkstemp(suffix=".db")
 os.environ["DATABASE_URL"] = os.environ.get("LGPD_TEST_DATABASE_URL") or ("sqlite:///" + _db_path)
 # Chave fixa nos testes: evita gravar instance/secret_key do projeto durante a suíte.
 os.environ.setdefault("SECRET_KEY", "chave-de-teste-nao-usar-em-producao-0123456789abcdef")
+# Anexos em pasta temporária: a suíte não escreve em instance/uploads do projeto.
+os.environ["ANEXOS_DIR"] = tempfile.mkdtemp(prefix="lgpd-anexos-")
 
 import pytest  # noqa: E402
 

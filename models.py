@@ -524,6 +524,30 @@ class EmailEnviado(db.Model):
     criado_em = db.Column(db.DateTime, default=agora_utc, nullable=False, index=True)
 
 
+# ── Anexos (evidências) de RIPD, incidente e pedido do titular ──────────────
+class Anexo(db.Model):
+    """Arquivo anexado como evidência (contrato com operador, print, resposta enviada...).
+
+    O binário fica em disco (ANEXOS_DIR ou instance/uploads/<empresa_id>/), fora do
+    git; aqui só os metadados. ``alvo_tipo``/``alvo_id`` apontam para o registro dono.
+    """
+    __tablename__ = "anexos"
+    __table_args__ = (db.Index("ix_anexos_alvo", "empresa_id", "alvo_tipo", "alvo_id"),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey("empresas.id"), nullable=False, index=True)
+    alvo_tipo = db.Column(db.String(20), nullable=False)   # ripd / incidente / pedido
+    alvo_id = db.Column(db.Integer, nullable=False)
+    nome_original = db.Column(db.String(255), nullable=False)
+    nome_arquivo = db.Column(db.String(80), nullable=False)  # uuid + extensão, no disco
+    mime = db.Column(db.String(100))
+    tamanho = db.Column(db.Integer)
+    enviado_por_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=True)
+    criado_em = db.Column(db.DateTime, default=agora_utc, nullable=False)
+
+    enviado_por = db.relationship("Usuario")
+
+
 # ── ROPA — Registro das operações de tratamento (Art. 37) ───────────────────
 class RopaRegistro(db.Model):
     __tablename__ = "ropa_registros"

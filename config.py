@@ -81,3 +81,10 @@ class Config:
 
     # Feed de legislação/notícias (RSS). Vazio => mostra só as referências fixas.
     FEED_URL = os.environ.get("FEED_URL", "")
+
+    # Anexos (evidências). O limite do request protege contra upload gigante;
+    # o limite por arquivo é o que o usuário vê. Diretório configurável (testes).
+    MAX_CONTENT_LENGTH = 8 * 1024 * 1024
+    ANEXO_MAX_MB = int(os.environ.get("ANEXO_MAX_MB", "5"))
+    ANEXO_EXTENSOES = {"pdf", "png", "jpg", "jpeg", "txt", "csv", "xlsx", "docx"}
+    ANEXOS_DIR = os.environ.get("ANEXOS_DIR")  # vazio = instance/uploads

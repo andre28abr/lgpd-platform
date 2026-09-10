@@ -1,0 +1,31 @@
+{# Parcial: lista + envio de anexos. Espera `anexos`, `alvo_tipo` e `alvo_id`. #}
+<div class="card">
+  <h3>Evidências e anexos</h3>
+  <p class="muted">Contratos com operadores, prints, respostas enviadas — o que comprova a conduta (accountability, Art. 6º, X).</p>
+  <ul class="lista-anexos">
+    {% for a in anexos %}
+    <li>
+      <a href="{{ url_for('anexos.baixar', anexo_id=a.id) }}">{{ a.nome_original }}</a>
+      <span class="muted">({{ ((a.tamanho or 0) / 1024)|round|int }} KB, {{ a.criado_em.strftime('%d/%m/%Y') }}{% if a.enviado_por %}, {{ a.enviado_por.nome }}{% endif %})</span>
+      {% if current_user.is_encarregado %}
+      <form method="post" action="{{ url_for('anexos.excluir', anexo_id=a.id) }}" data-confirm="Excluir o anexo '{{ a.nome_original }}'?" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="link-excluir" type="submit">Excluir</button>
+      </form>
+      {% endif %}
+    </li>
+    {% else %}
+    <li class="muted">Nenhum anexo ainda.</li>
+    {% endfor %}
+  </ul>
+  {% if current_user.is_encarregado %}
+  <form method="post" enctype="multipart/form-data" action="{{ url_for('anexos.enviar', tipo=alvo_tipo, alvo_id=alvo_id) }}" class="form-inline" style="margin-top:.8rem;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="campo">
+      <span>Adicionar arquivo (PDF, imagem, texto ou planilha — até {{ config.ANEXO_MAX_MB }} MB)</span>
+      <input type="file" name="arquivo" required>
+    </label>
+    <button class="btn btn-ghost" type="submit">Anexar</button>
+  </form>
+  {% endif %}
+</div>
