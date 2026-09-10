@@ -8,7 +8,17 @@
   </p>
 </div>
 
-<div class="grid grid-2">
+<div class="card tour" data-tour="colaborador" hidden>
+  <div class="cert-head"><h3>Comece por aqui</h3><button type="button" class="btn btn-ghost" data-tour-fechar>Entendi</button></div>
+  <ol class="tour-passos">
+    <li>Leia a <a href="{{ url_for('trilhas.listar') }}">trilha da sua área</a> e a trilha Geral — e marque como lidas.</li>
+    <li>Faça a <a href="{{ url_for('provas.index') }}">avaliação</a>: 10 questões (7 da sua área + 3 gerais), 15 minutos, nota de corte {{ config.NOTA_CORTE }}%.</li>
+    <li>Aprovado? Seu <a href="{{ url_for('certificados.listar') }}">certificado</a> sai na hora, com código de verificação pública.</li>
+    <li>Proteja sua conta: ative a <a href="{{ url_for('perfil.index') }}">verificação em duas etapas</a>.</li>
+  </ol>
+</div>
+
+<div class="grid grid-3">
   <div class="card status-card">
     <h3>Situação do seu certificado</h3>
     {% if cert %}
@@ -19,6 +29,13 @@
       <p class="pill pill-alerta">Pendente</p>
       <p class="muted">Você ainda não tem um certificado válido para a sua área.</p>
     {% endif %}
+  </div>
+
+  <div class="card status-card">
+    <h3>Trilhas</h3>
+    <p class="metric-num">{{ trilhas_lidas }} <small>de {{ trilhas_total }}</small></p>
+    <p class="muted">trilhas lidas na sua área e na Geral.</p>
+    <a class="btn btn-ghost" href="{{ url_for('trilhas.listar') }}">{{ 'Reler' if trilhas_lidas == trilhas_total and trilhas_total else 'Continuar estudando' }}</a>
   </div>
 
   <div class="card status-card">

@@ -21,7 +21,8 @@ flask db upgrade        # aplica migrações (ou: flask init-db p/ SQLite rápid
 flask seed              # empresa de demo — login dpo@acme.com.br / senha lgpd1234
 
 python app.py           # http://127.0.0.1:8080 (abre o navegador sozinho; FLASK_DEBUG=1 p/ reloader)
-pytest                  # 61 testes (SQLite temp) · LGPD_TEST_DATABASE_URL=postgresql://... p/ Postgres
+pytest                  # 101 testes (SQLite temp) · LGPD_TEST_DATABASE_URL=postgresql://... p/ Postgres
+flask demo-reset --confirmar   # recria a demo do zero (só SQLite)
 ruff check . && pip-audit -r requirements.txt   # o CI exige os dois limpos + cobertura ≥ 85%
 
 docker compose up --build   # alternativa: web + PostgreSQL + Redis
@@ -31,10 +32,12 @@ docker compose up --build   # alternativa: web + PostgreSQL + Redis
 
 - `app.py` — app factory (CSRF, cabeçalhos, logging com request-id, filtros Jinja, CLI).
 - `config.py` · `extensions.py` · `security.py` · `utils.py` — base e configuração.
-- `models.py` — 18 modelos multi-tenant (tudo escopado por `empresa_id`).
-- `routes/` — 16 blueprints · `services/` — lógica (métricas, PDFs, diagnóstico, e-mail, 2FA, auditoria, relatórios).
+- `models.py` — 21 modelos multi-tenant (tudo escopado por `empresa_id`).
+- `routes/` — 17 blueprints · `services/` — lógica (métricas, KPIs, prazos, PDFs, e-mail/caixa de saída,
+  auditoria encadeada, anexos, ciclo de vida, portabilidade, ROPA export/import…).
+- `conteudo/` — banco de questões e trilhas (**só fonte oficial**; ver regra abaixo) · `docs/` — dossiê de fontes e CSV.
 - `templates/` (Jinja) · `static/` (CSS flat próprio, JS mínimo, sem framework).
-- `seed.py` — conteúdo curado + demo · `tests/` — pytest · `migrations/` — Alembic.
+- `seed.py` — `atualizar_biblioteca()` idempotente + empresas demo · `tests/` — pytest · `migrations/` — Alembic.
 
 ## Convenções
 
@@ -50,6 +53,15 @@ docker compose up --build   # alternativa: web + PostgreSQL + Redis
 - Datas: usar **`utils.agora_utc()`**, nunca `datetime.utcnow()` (deprecado no 3.12+).
 - **Auditoria** via `services.auditoria.registrar()` — é best-effort e encadeia hash; não
   gravar `AuditLog` direto.
+- **Papéis no Pilar 2:** só o Encarregado altera; o Gestor visualiza (`gestor_somente_leitura`).
+  Rotas de escrita novas nesses módulos herdam o bloqueio pelo `before_request`.
+- **Conteúdo (questões/trilhas):** só o que está no texto da lei (Planalto) ou em norma/guia
+  oficial da ANPD, com a fonte no campo `artigo`. Nada de "praxe de mercado". Regenerar
+  `docs/banco-questoes.csv` (`flask exportar-questoes`) ao mexer no banco. O checklist é
+  `tests/test_banco_questoes.py`. Questões que saem do banco são **desativadas** pelo seed, não apagadas.
+- **Demo-first:** o projeto é uma demonstração para baixar e rodar local. Não exigir serviço
+  externo (SMTP, Redis, VPS) para nenhuma funcionalidade; o caminho Docker/Postgres deve
+  continuar funcionando, mas é opcional.
 - **Não fazer push** sem o usuário pedir. Trabalhar na branch `main`.
 - Ao usar o preview, **parar o servidor (porta 8080)** antes de devolver o controle.
 
@@ -74,6 +86,6 @@ docker compose up --build   # alternativa: web + PostgreSQL + Redis
 ## Estado
 
 Pilar 1 (educacional) + Pilar 2 (gestão de privacidade) completos. Ciclo de auditoria de
-segurança e hardening concluído em set/2026 (detalhes no Roadmap do README). 61 testes,
-7 migrações, CI (ruff · pip-audit · pytest 3.12/3.13 · PostgreSQL 16). Licença AGPL-3.0.
-Repo: https://github.com/andre28abr/lgpd-platform
+segurança, hardening e melhorias de produto/conteúdo concluído em set/2026 (detalhes no
+Roadmap do README). 101 testes, 12 migrações, 229 questões, CI (ruff · pip-audit ·
+pytest 3.12/3.13 · PostgreSQL 16). Licença AGPL-3.0. Repo: https://github.com/andre28abr/lgpd-platform

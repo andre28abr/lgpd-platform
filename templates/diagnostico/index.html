@@ -40,7 +40,10 @@
 </div>
 {% endif %}
 
-<div class="section-head"><h2>Histórico</h2></div>
+<div class="section-head">
+  <h2>Histórico</h2>
+  <a class="btn btn-ghost" href="{{ url_for('diagnostico.comparativo') }}">Comparativo por setor</a>
+</div>
 <div class="card">
   <table class="tabela">
     <thead><tr><th>Data</th><th>Escopo</th><th>Responsável</th><th>Score</th><th>Nível</th><th></th></tr></thead>

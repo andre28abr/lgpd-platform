@@ -1,9 +1,10 @@
-"""Trilhas de treinamento (conteúdo curado em Markdown)."""
-from flask import Blueprint, abort, render_template
+"""Trilhas de treinamento (conteúdo curado em Markdown) e progresso de leitura."""
+from flask import Blueprint, abort, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 
 import models
+from extensions import db
 
 bp = Blueprint("trilhas", __name__, url_prefix="/trilhas")
 
@@ -26,15 +27,24 @@ def _query_visivel():
     )
 
 
+def _lidas_ids():
+    return {le.trilha_id for le in models.TrilhaLeitura.query.filter_by(usuario_id=current_user.id).all()}
+
+
+def progresso_trilhas():
+    """(lidas, total) das trilhas visíveis ao usuário atual — alimenta o painel."""
+    ids = {t.id for t in _query_visivel().all()}
+    return len(_lidas_ids() & ids), len(ids)
+
+
 @bp.route("/")
 @login_required
 def listar():
     trilhas = _query_visivel().order_by(models.Trilha.area, models.Trilha.ordem).all()
-    # Agrupa por área para exibição.
     grupos = {}
     for t in trilhas:
         grupos.setdefault(t.area, []).append(t)
-    return render_template("trilhas/listar.html", grupos=grupos)
+    return render_template("trilhas/listar.html", grupos=grupos, lidas=_lidas_ids())
 
 
 @bp.route("/<slug>")
@@ -43,4 +53,18 @@ def ver(slug):
     trilha = _query_visivel().filter(models.Trilha.slug == slug).first()
     if not trilha:
         abort(404)
-    return render_template("trilhas/ver.html", trilha=trilha)
+    leitura = models.TrilhaLeitura.query.filter_by(usuario_id=current_user.id, trilha_id=trilha.id).first()
+    return render_template("trilhas/ver.html", trilha=trilha, leitura=leitura)
+
+
+@bp.route("/<slug>/lida", methods=["POST"])
+@login_required
+def marcar_lida(slug):
+    trilha = _query_visivel().filter(models.Trilha.slug == slug).first()
+    if not trilha:
+        abort(404)
+    if not models.TrilhaLeitura.query.filter_by(usuario_id=current_user.id, trilha_id=trilha.id).first():
+        db.session.add(models.TrilhaLeitura(usuario_id=current_user.id, trilha_id=trilha.id))
+        db.session.commit()
+    flash("Trilha marcada como lida.", "ok")
+    return redirect(url_for("trilhas.ver", slug=slug))

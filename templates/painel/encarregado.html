@@ -6,6 +6,17 @@
   <p class="muted">Visão geral de conformidade de {{ current_user.empresa.nome }}.</p>
 </div>
 
+<div class="card tour" data-tour="encarregado" hidden>
+  <div class="cert-head"><h3>Comece por aqui</h3><button type="button" class="btn btn-ghost" data-tour-fechar>Entendi</button></div>
+  <ol class="tour-passos">
+    <li><a href="{{ url_for('admin.setores') }}">Setores</a> e <a href="{{ url_for('admin.usuarios') }}">usuários</a>: cada setor recebe uma área da LGPD; cada pessoa, um papel.</li>
+    <li><a href="{{ url_for('diagnostico.index') }}">Diagnóstico de maturidade</a>: o retrato inicial, com plano de ação e PDF.</li>
+    <li><a href="{{ url_for('ropa.listar') }}">ROPA</a> (o inventário do Art. 37) → <a href="{{ url_for('ripd.listar') }}">RIPD</a> para os tratamentos de risco → anexe as evidências.</li>
+    <li><a href="{{ url_for('direitos.listar') }}">Direitos do titular</a> e <a href="{{ url_for('incidentes.listar') }}">incidentes</a>: o bloco "Atenção agora" acima mostra o que vence. Publique o link do <a href="{{ url_for('publico.titular', slug=current_user.empresa.slug) }}">portal do titular</a> no site da empresa.</li>
+    <li><a href="{{ url_for('admin.reavaliacoes') }}">Reavaliações</a>, <a href="{{ url_for('admin.auditoria') }}">auditoria</a> e <a href="{{ url_for('admin.configuracoes') }}">2FA obrigatório</a> fecham o ciclo de accountability.</li>
+  </ol>
+</div>
+
 <div class="grid grid-4">
   <div class="card metric">
     <span class="metric-num">{{ dados.pct_conformidade }}%</span>

@@ -12,6 +12,17 @@
   </div>
   <p class="muted">Inventário das operações de tratamento de dados pessoais (Art. 37).{% if not current_user.is_encarregado %} Somente leitura — alterações são feitas pelo Encarregado.{% endif %}</p>
 </div>
+{% if current_user.is_encarregado %}
+<details class="card" style="margin-bottom:1rem;">
+  <summary>Importar de planilha (xlsx ou csv)</summary>
+  <p class="muted">Já tem o inventário numa planilha? Use as colunas do <a href="{{ url_for('ropa.modelo_xlsx') }}">modelo</a> (Atividade, Setor, Titulares, Categorias de dados, Finalidade, Base legal, Retenção, Compartilhamento). O setor é reconhecido pelo nome; a base legal, pelo rótulo ou código.</p>
+  <form method="post" enctype="multipart/form-data" action="{{ url_for('ropa.importar') }}" class="form-inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="campo"><span>Planilha</span><input type="file" name="planilha" accept=".xlsx,.csv" required></label>
+    <button class="btn btn-ghost" type="submit">Importar</button>
+  </form>
+</details>
+{% endif %}
 <div class="card">
   <table class="tabela">
     <thead><tr><th>Atividade</th><th>Setor</th><th>Base legal</th><th>Titulares</th><th></th></tr></thead>

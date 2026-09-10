@@ -1,10 +1,12 @@
 """Geração do certificado de conformidade em PDF (reportlab)."""
 from io import BytesIO
 
+import qrcode
 from flask import url_for
 from reportlab.lib.colors import HexColor
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 _AZUL = HexColor("#0f4c5c")
@@ -73,6 +75,13 @@ def gerar_pdf(cert) -> BytesIO:
     c.drawRightString(largura - 28 * mm, 26 * mm, f"Código: {cert.codigo}")
     c.setFont("Helvetica", 8)
     c.drawRightString(largura - 28 * mm, 21 * mm, f"Verifique em: {url}")
+
+    # QR Code apontando para a verificação pública (leitura pelo celular).
+    qr = BytesIO()
+    qrcode.make(url).save(qr, format="PNG")
+    qr.seek(0)
+    lado = 26 * mm
+    c.drawImage(ImageReader(qr), largura - 28 * mm - lado, 31 * mm, lado, lado)
 
     c.showPage()
     c.save()

@@ -279,3 +279,11 @@ a.user-meta:hover .user-name { text-decoration: underline; }
 .barra { background: #eeede8; border-radius: 6px; height: 10px; overflow: hidden; }
 .barra span { display: block; height: 100%; background: var(--primaria); border-radius: 6px; }
 .barra-valor { color: var(--muted); min-width: 1.5rem; text-align: right; }
+
+/* ── Tour "Comece por aqui" ── */
+.tour { border-left: 4px solid var(--primaria); }
+.tour-passos { margin: .4rem 0 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: .35rem; font-size: .92rem; }
+.status-card .metric-num { display: block; font-size: 1.8rem; font-weight: 700; color: var(--primaria); margin: .2rem 0; }
+.status-card .metric-num small { font-size: .9rem; font-weight: normal; color: var(--muted); }
+.comparativo th, .comparativo td { text-align: center; }
+.comparativo th:first-child, .comparativo td:first-child { text-align: left; }

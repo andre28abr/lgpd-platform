@@ -6,6 +6,16 @@
   <p class="muted">{{ setor.nome if setor else 'Sem setor atribuído' }}{% if setor %} — {{ setor.area_label }}{% endif %}</p>
 </div>
 
+<div class="card tour" data-tour="gestor" hidden>
+  <div class="cert-head"><h3>Comece por aqui</h3><button type="button" class="btn btn-ghost" data-tour-fechar>Entendi</button></div>
+  <ol class="tour-passos">
+    <li>Seu painel mostra quantos colaboradores do setor estão certificados e a média das avaliações.</li>
+    <li>No <a href="{{ url_for('ranking.index') }}">ranking</a> você compara o setor com os demais e exporta o relatório.</li>
+    <li>Em <a href="{{ url_for('privacidade.index') }}">Privacidade</a> você acompanha ROPA, RIPD, pedidos e incidentes em modo leitura — quem altera é o Encarregado.</li>
+    <li>Faça você também a <a href="{{ url_for('trilhas.listar') }}">trilha</a> e a avaliação da sua área: gestor certificado puxa o setor.</li>
+  </ol>
+</div>
+
 {% if resumo %}
 <div class="grid grid-3">
   <div class="card metric">

@@ -85,6 +85,37 @@ def _grafico_evolucao(historico):
     }
 
 
+def _comparativo():
+    """Último diagnóstico concluído de cada escopo (empresa toda e cada setor), por dimensão."""
+    concluidos = (
+        models.Diagnostico.query.filter_by(empresa_id=current_user.empresa_id, status="concluido")
+        .order_by(models.Diagnostico.finalizado_em.desc()).all()
+    )
+    escopos, vistos = [], set()
+    for d in concluidos:
+        if d.setor_id in vistos:
+            continue
+        vistos.add(d.setor_id)
+        score, nivel, linhas, _ = computar(d)
+        escopos.append({"diag": d, "label": d.setor_label, "score": score, "nivel": nivel,
+                        "por_dim": {li["dimensao"]: li["pct"] for li in linhas}})
+    escopos.sort(key=lambda e: (e["diag"].setor_id is not None, e["label"]))  # empresa toda primeiro
+    return escopos
+
+
+@bp.route("/comparativo")
+def comparativo():
+    return render_template("diagnostico/comparativo.html", escopos=_comparativo(), dimensoes=models.DIMENSOES)
+
+
+@bp.route("/comparativo.pdf")
+def comparativo_pdf():
+    from services.diagnostico_pdf import comparativo_pdf as gerar
+    buf = gerar(current_user.empresa, _comparativo(), models.DIMENSOES)
+    return send_file(buf, mimetype="application/pdf", as_attachment=False,
+                     download_name="diagnostico-comparativo.pdf")
+
+
 @bp.route("/<int:diag_id>")
 def responder(diag_id):
     diag = _do_empresa(diag_id)

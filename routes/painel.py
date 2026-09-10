@@ -32,9 +32,12 @@ def index():
         resumo = resumo_setor(usuario.setor) if usuario.setor else None
         return render_template("painel/gestor.html", setor=usuario.setor, resumo=resumo)
 
+    from routes.trilhas import progresso_trilhas
     area = usuario.setor.area if usuario.setor else None
+    lidas, total = progresso_trilhas()
     return render_template(
         "painel/colaborador.html",
         cert=certificado_vigente(usuario.id, area),
         ultima=ultima_prova(usuario.id),
+        trilhas_lidas=lidas, trilhas_total=total,
     )

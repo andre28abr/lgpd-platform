@@ -13,9 +13,9 @@
 <form method="post" action="{{ url_for('provas.responder', prova_id=prova.id) }}" data-prova data-total="{{ prova.total_questoes }}"{% if restante is not none %} data-segundos="{{ restante }}"{% endif %}>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   {% for item in prova.itens %}
-  <div class="card questao">
+  <div class="card questao" role="group" aria-labelledby="q{{ item.id }}">
     <p class="questao-num">Questão {{ loop.index }}</p>
-    <p class="questao-enunciado">{{ item.questao.enunciado }}</p>
+    <p class="questao-enunciado" id="q{{ item.id }}">{{ item.questao.enunciado }}</p>
     <div class="alternativas">
       {% for alt in item.alternativas_ordenadas() %}
       <label class="alternativa">

@@ -6,7 +6,7 @@
 ![Status](https://img.shields.io/badge/status-MVP%20%2B%20fase%202%20completos-success)
 ![Python](https://img.shields.io/badge/python-3.12+-blue)
 ![Flask](https://img.shields.io/badge/flask-3-000000)
-![Tests](https://img.shields.io/badge/tests-61%20passando-success)
+![Tests](https://img.shields.io/badge/tests-101%20passando-success)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-orange)
 
 ---
@@ -61,7 +61,9 @@ Atualmente em **transição de carreira, com disponibilidade imediata**, esta pl
 - **Diagnóstico de maturidade** com score por dimensão, **plano de ação** e **gráfico de evolução**.
 - **Roda leve:** SQLite com um comando para demo/local; **Postgres + Redis via Docker** para produção. Mesmo código (SQLAlchemy).
 - **Segurança séria:** 2FA (TOTP) com códigos de recuperação e modo obrigatório por empresa, bloqueio de conta, CSRF, CSP/HSTS, **trilha de auditoria encadeada por hash** (adulteração detectável) + CSV, reset de senha por link, e **logging estruturado com request-id**.
-- **Testada como produto:** 61 testes, incluindo **isolamento multi-tenant com duas empresas**, e CI que roda lint, auditoria de dependências e a suíte inteira **também em PostgreSQL**.
+- **Conteúdo com fonte:** 229 questões e 7 trilhas ancoradas **exclusivamente** no texto da lei (Planalto) e nas normas e guias da ANPD — o dossiê de fontes está em [`docs/fontes-lgpd.md`](docs/fontes-lgpd.md) e o banco revisável em [`docs/banco-questoes.csv`](docs/banco-questoes.csv).
+- **Testada como produto:** 101 testes, incluindo **isolamento multi-tenant com duas empresas**, e CI que roda lint, auditoria de dependências e a suíte inteira **também em PostgreSQL**.
+- **Demonstrável sem infraestrutura:** duas empresas de exemplo, dados do Pilar 2 em situações reais (pedido atrasado, incidente sem ANPD), caixa de saída de e-mails visível sem SMTP, portal público do titular e `flask demo-reset` para recomeçar.
 
 **Stack:** Python 3.12+ · Flask 3 · SQLAlchemy 2 + Alembic · Flask-Login · Flask-Limiter (memória/Redis) · Jinja · ReportLab (PDF) · openpyxl (Excel) · pyotp + qrcode (2FA) · feedparser · Markdown + Bleach · Gunicorn · SQLite/PostgreSQL · Docker.
 
@@ -102,29 +104,44 @@ Esta plataforma endereça as duas: **treina e certifica os times por setor** (co
 ## O que faz (módulos)
 
 ### Pilar 1 — Educacional
-- **Trilhas de treinamento** por área, em Markdown, ancoradas na lei.
-- **Banco de questões curado** (por área, artigo e dificuldade) — administrável pela própria empresa.
-- **Provas por sorteio**: questões e alternativas embaralhadas a cada tentativa, com **cronômetro** e correção comentada (artigo + explicação).
-- **Certificação** com nota de corte, **validade**, **PDF** (ReportLab) e **verificação pública por código**.
+- **Trilhas de treinamento**: uma por área (RH, Financeiro, TI, Marketing, Atendimento, Jurídico/Compras e Geral), em Markdown, com **marcação de leitura** e progresso no painel do colaborador.
+- **Banco de 229 questões** (30+ por área, 42 gerais), cada uma com **fonte** (artigo da lei, resolução, guia ou enunciado da ANPD) e explicação fiel — administrável e ampliável pela própria empresa.
+- **Provas por sorteio**: 7 questões da área + 3 gerais, **equilíbrio de dificuldade**, alternativas embaralhadas, **cronômetro validado no servidor**, limite de tentativas por dia e correção comentada (fonte + explicação). Se o banco da área for pequeno demais, a prova não abre.
+- **Certificação** com nota de corte, **validade**, **PDF com QR Code** (ReportLab) e **verificação pública por código**.
 - **Ranking de conformidade** entre setores + **relatórios** em Excel e PDF.
 
 ### Pilar 2 — Gestão de privacidade (hub "Privacidade")
-- **Diagnóstico de maturidade**: questionário em 5 dimensões, score ponderado, nível, **plano de ação**, **PDF** e **gráfico de evolução**.
-- **ROPA** (Art. 37): inventário de tratamentos por setor (dados, finalidade, **base legal**, retenção, compartilhamento), com **exportação em Excel e PDF** — o artefato que o Encarregado entrega à ANPD ou a auditores.
-- **RIPD** (Art. 38): matriz de risco (probabilidade × impacto), risco residual, medidas e **PDF**.
-- **Direitos do titular** (Art. 18): registro de pedidos com **prazo**, status e responsável.
-- **Incidentes** (Art. 48): registro e resposta, com **comunicação à ANPD e aos titulares**.
+- **Diagnóstico de maturidade**: questionário em 5 dimensões, score ponderado, nível, **plano de ação**, **PDF**, **gráfico de evolução** e **comparativo por setor** (HTML e PDF).
+- **ROPA** (Art. 37): inventário de tratamentos por setor (dados, finalidade, **base legal**, retenção, compartilhamento), com **exportação em Excel e PDF** e **importação de planilha** (xlsx/csv, com modelo).
+- **RIPD** (Art. 38): matriz de risco (probabilidade × impacto), risco residual, medidas, **PDF** e **anexos** (evidências).
+- **Direitos do titular** (Art. 18): **portal público** onde o titular abre o pedido e recebe um **protocolo**; fila do DPO com prazo, status, responsável e anexos.
+- **Incidentes** (Art. 48): registro e resposta, comunicação à ANPD e aos titulares, contagem de **dias úteis** (Res. CD/ANPD nº 15/2024) e anexos.
+- **Painel do Encarregado**: bloco **"Atenção agora"** (pedidos vencendo/atrasados, incidentes sem ANPD, RIPDs em rascunho) e **KPIs de privacidade** (pedidos no prazo, ROPA por base legal). `flask prazos --email` para o cron.
 - **Legislação**: feed RSS opcional (ANPD) + referências fixas.
 
 ### Administração & gestão
-- Multi-tenant: **Empresa → Setores → Usuários**, com papéis (Encarregado/DPO, Gestor, Colaborador).
+- Multi-tenant: **Empresa → Setores → Usuários**, com papéis: **Encarregado/DPO** (altera tudo), **Gestor** (acompanha o setor e o Pilar 2 **em modo leitura**), **Colaborador** (treina e se certifica).
 - CRUD de trilhas, questões e usuários; **reavaliações** (vencidos/vencendo) com notificação por e-mail/cron.
-- **Configurações** de segurança (ex.: 2FA obrigatório por empresa) e **auditoria** consultável + CSV.
+- **Configurações** (2FA obrigatório, remetente de e-mail por empresa), **auditoria** consultável + CSV, **caixa de saída de e-mails** (visível mesmo sem SMTP).
+- **Ciclo de vida dos dados da própria plataforma**: anonimização de usuário desligado, expurgo por política de retenção (`flask expurgar`) e **exportação/importação da empresa em JSON**.
 
 ### Segurança
 2FA (TOTP) com **códigos de recuperação**, reset pelo Encarregado, **modo obrigatório** e reautenticação por senha para desativar; bloqueio de conta por tentativas (sem enumeração de contas); **reset de senha por link** de uso único; CSRF por sessão; cabeçalhos/CSP/HSTS; senha com hash; HTML sanitizado; **trilha de auditoria encadeada por hash** (`flask auditoria-verificar`); **logging estruturado com request-id**; escopo multi-tenant em todas as consultas **e nas chaves estrangeiras vindas de formulários**.
 
 ---
+
+## Conteúdo e fontes
+
+O banco de questões e as trilhas seguem uma regra editorial única: **só entra o que está em fonte oficial** —
+o texto compilado da Lei nº 13.709/2018 no Planalto, as Resoluções do Conselho Diretor da ANPD
+(2/2022, 4/2023, 15/2024, 18/2024, 19/2024, 32/2026), o Enunciado 1/2023 e os Guias Orientativos da ANPD.
+Cada questão carrega a fonte no campo exibido na correção. O que sustenta isso:
+
+- [`docs/fontes-lgpd.md`](docs/fontes-lgpd.md) — dossiê com transcrição literal de 45 artigos, resumo fiel das normas da ANPD, URLs, data de acesso e a lista do que **não** pôde ser confirmado.
+- [`docs/banco-questoes.csv`](docs/banco-questoes.csv) — as 229 questões com fonte, alternativa correta, incorretas e explicação, para revisão jurídica.
+- `tests/test_banco_questoes.py` — o checklist automático: cobertura por área, forma, fonte obrigatória, unicidade, três níveis de dificuldade e o comportamento do sorteio.
+
+A validação jurídica final é do Encarregado; o repositório entrega o material e a rastreabilidade.
 
 ## Mapa de artigos da LGPD
 
@@ -148,11 +165,12 @@ Onde cada artigo aparece no produto — a régua jurídica vira função:
 
 Monólito Flask com *app factory* e organização clássica em camadas:
 
-- **`routes/`** — 16 blueprints (auth, painel, trilhas, provas, certificados, ranking, admin, diagnóstico, ROPA, RIPD, direitos, incidentes, legislação, privacidade, perfil, público).
-- **`services/`** — lógica de negócio isolada (métricas, geração de PDF, diagnóstico, e-mail, recuperação 2FA, auditoria, relatórios).
-- **`models.py`** — 18 modelos SQLAlchemy, multi-tenant (tudo escopado por `empresa_id`).
+- **`routes/`** — 17 blueprints (auth, painel, trilhas, provas, certificados, ranking, admin, diagnóstico, ROPA, RIPD, direitos, incidentes, legislação, privacidade, perfil, público, anexos).
+- **`services/`** — lógica de negócio isolada (métricas, KPIs, prazos, PDFs, diagnóstico, e-mail e caixa de saída, reset de senha, recuperação 2FA, auditoria encadeada, relatórios, export/import do ROPA, anexos, ciclo de vida, portabilidade).
+- **`conteudo/`** — a biblioteca curada: 229 questões e 7 trilhas, com fonte em cada item.
+- **`models.py`** — 21 modelos SQLAlchemy, multi-tenant (tudo escopado por `empresa_id`).
 - **`templates/` + `static/`** — Jinja server-rendered, CSS flat próprio, JS mínimo (sem framework).
-- **`migrations/`** — Alembic (6 migrações), *Postgres-ready*.
+- **`migrations/`** — Alembic (12 migrações), validadas em SQLite e PostgreSQL.
 
 O banco é **agnóstico**: SQLite por padrão (zero config), PostgreSQL quando `DATABASE_URL` aponta para ele. O rate limit usa memória por padrão ou **Redis** via `RATELIMIT_STORAGE_URI`.
 
@@ -203,13 +221,16 @@ security.py       CSRF, cabeçalhos e política de senha
 models.py         18 modelos multi-tenant
 utils.py          helpers (datetime UTC timezone-safe)
 routes/           16 blueprints
-services/         métricas, PDFs, diagnóstico, e-mail, 2FA, auditoria encadeada, relatórios,
-                  export do ROPA, reset de senha
-templates/        Jinja (48 templates)
+services/         métricas, KPIs, prazos, PDFs, diagnóstico, e-mail + caixa de saída, 2FA,
+                  auditoria encadeada, relatórios, ROPA (export/import), anexos, ciclo de vida,
+                  portabilidade, reset de senha
+conteudo/         banco de 229 questões + 7 trilhas (fonte em cada item)
+docs/             dossiê de fontes oficiais e CSV de revisão do banco
+templates/        Jinja (53 templates)
 static/           CSS e JS
-seed.py           biblioteca curada + empresa de demonstração
-tests/            suíte pytest (61 testes, inclui isolamento multi-tenant com 2 empresas)
-migrations/       Alembic (7 migrações), validadas em SQLite e PostgreSQL
+seed.py           atualiza a biblioteca (idempotente) + empresas de demonstração
+tests/            suíte pytest (101 testes, inclui isolamento multi-tenant com 2 empresas)
+migrations/       Alembic (12 migrações), validadas em SQLite e PostgreSQL
 ruff.toml         lint (E/F/W/I/B/BLE)
 Dockerfile · docker-compose.yml · entrypoint.sh    empacotamento (web + Postgres + Redis, healthcheck)
 .github/workflows/ci.yml                            CI: ruff · pip-audit · pytest 3.12/3.13 (cobertura ≥ 85%) · PostgreSQL 16
@@ -219,13 +240,17 @@ Dockerfile · docker-compose.yml · entrypoint.sh    empacotamento (web + Postgr
 
 ## Quickstart
 
-### Local (SQLite, um comando — macOS)
+### Local (SQLite, um comando)
 
 ```bash
-./INICIAR-MAC.command
+./iniciar.sh               # Linux e macOS   (primeira vez: chmod +x iniciar.sh)
+INICIAR-WINDOWS.bat        # Windows (clique duplo)
+./INICIAR-MAC.command      # macOS, pelo Finder
 ```
 
 Cria o ambiente, prepara o banco, popula a demonstração e abre o navegador em `http://127.0.0.1:8080`.
+Para recomeçar do zero: `./iniciar.sh --reset` (ou `flask demo-reset --confirmar`). Uma instalação
+antiga recebe o banco de questões novo com um simples `flask seed` — nada é recriado.
 
 ### Manual
 
@@ -248,11 +273,14 @@ docker compose up --build      # http://localhost:8080
 
 ```bash
 pip install -r requirements-dev.txt
-pytest                          # 61 testes (SQLite temporário)
+pytest                          # 101 testes (SQLite temporário)
 pytest --cov=. --cov-fail-under=85
 ruff check .                    # lint
 pip-audit -r requirements.txt   # vulnerabilidades conhecidas
 flask auditoria-verificar       # integridade da trilha de auditoria
+flask exportar-questoes docs/banco-questoes.csv   # banco para revisão jurídica
+flask prazos --email            # alertas de prazo (cron)
+flask expurgar                  # política de retenção (AUDITORIA_RETENCAO_DIAS / EMAILS_RETENCAO_DIAS)
 ```
 
 Para rodar a mesma suíte contra um PostgreSQL: `LGPD_TEST_DATABASE_URL=postgresql://... pytest` (é o que o CI faz).
@@ -265,6 +293,10 @@ Para rodar a mesma suíte contra um PostgreSQL: `LGPD_TEST_DATABASE_URL=postgres
 | Gestor (RH) | gestor.rh@acme.com.br |
 | Colaborador (RH) | ana@acme.com.br |
 | Colaborador (Financeiro) | paula@acme.com.br |
+| Encarregado da 2ª empresa (isolamento) | dpo@novaera.com.br |
+
+Sem login: o **portal do titular** da demo fica em `/titular/acme` (link na tela de entrada) e a
+verificação pública de certificados em `/certificados/verificar/<código>`.
 
 ---
 
@@ -278,8 +310,12 @@ Para rodar a mesma suíte contra um PostgreSQL: `LGPD_TEST_DATABASE_URL=postgres
 | `SESSION_COOKIE_SECURE` | `false` | `true` atrás de HTTPS (liga também o HSTS) |
 | `PROXY_FIX_HOPS` | `0` | Saltos confiáveis de `X-Forwarded-*` atrás de proxy reverso (normalmente `1`) |
 | `FLASK_DEBUG` | `0` | `1` liga debugger/reloader no `python app.py` (só desenvolvimento) |
-| `TEMPO_PROVA_MIN` | `15` | Tempo da prova (0 = sem limite) |
-| `NOTA_CORTE` / `QUESTOES_POR_PROVA` | `70` / `8` | Regras de avaliação |
+| `TEMPO_PROVA_MIN` | `15` | Tempo da prova (0 = sem limite), validado no servidor |
+| `NOTA_CORTE` | `70` | Nota mínima para o certificado |
+| `QUESTOES_POR_PROVA` / `QUESTOES_GERAIS_POR_PROVA` | `7` / `3` | Questões da área + gerais em cada prova |
+| `POOL_MINIMO_FATOR` / `PROVAS_POR_DIA` | `2` / `3` | Banco mínimo (× sorteado) e tentativas diárias |
+| `AUDITORIA_RETENCAO_DIAS` / `EMAILS_RETENCAO_DIAS` | `0` / `90` | Retenção dos dados da própria plataforma (`flask expurgar`) |
+| `ANEXO_MAX_MB` / `ANEXOS_DIR` | `5` / `instance/uploads` | Anexos (evidências) |
 | `CERT_VALIDADE_DIAS` | `365` | Validade do certificado |
 | `LOGIN_MAX_TENTATIVAS` / `LOGIN_BLOQUEIO_MIN` | `5` / `15` | Bloqueio de conta |
 | `MAIL_SERVER` … | — | SMTP (sem ele, e-mail roda em *dry-run*) |
@@ -289,18 +325,19 @@ Para rodar a mesma suíte contra um PostgreSQL: `LGPD_TEST_DATABASE_URL=postgres
 
 ## Métricas do código
 
-- **~7.300 linhas** (4.263 Python + 943 de testes + 1.754 templates + 329 CSS/JS), sem contar venv/migrações.
-- **69 rotas**, **18 modelos**, **16 blueprints**, **13 serviços**, **48 templates**.
-- **61 testes** (auth, CSRF, RBAC, **isolamento multi-tenant**, provas e cronômetro, certificados, 2FA e reautenticação, lockout, reset de senha, diagnóstico, ROPA e export, RIPD, direitos, incidentes, PDFs, auditoria encadeada, métricas sem N+1), cobertura ~90%.
-- **7 migrações** Alembic, validadas em SQLite **e PostgreSQL 16** no CI; **lint** (ruff) e **pip-audit** a cada push.
+- **~10.800 linhas** (5.213 Python + 1.531 de conteúdo curado + 1.554 de testes + 2.113 templates + 362 CSS/JS), sem contar venv/migrações.
+- **82 rotas**, **21 modelos**, **17 blueprints**, **19 serviços**, **53 templates**, **229 questões**, **7 trilhas**.
+- **101 testes** (auth, CSRF, RBAC e papéis, **isolamento multi-tenant**, provas 7+3 e cronômetro, certificados, 2FA e reautenticação, lockout, reset de senha, diagnóstico e comparativo, ROPA export/import, RIPD, portal do titular, prazos e KPIs, anexos, anonimização e expurgo, export/import da empresa, PDFs, auditoria encadeada, métricas sem N+1, **checklist do banco de questões**), cobertura ~90%.
+- **12 migrações** Alembic, validadas em SQLite **e PostgreSQL 16** no CI; **lint** (ruff) e **pip-audit** a cada push.
 
 ---
 
 ## Roadmap
 
 - **Concluído:** Pilar 1 (educacional) e Pilar 2 (gestão de privacidade) completos; qualidade (testes, 2FA, auditoria, logging); empacotamento Docker.
-- **Concluído (set/2026) — ciclo de auditoria de segurança e hardening:** chave secreta nunca pública; validação de FKs cross-tenant; cronômetro no servidor; migrações funcionando em PostgreSQL; PDFs com escape; métricas sem N+1; sessão com prazo real; ProxyFix/HSTS; reautenticação no 2FA; reset de senha; export do ROPA; auditoria encadeada por hash; CI com lint, pip-audit e Postgres.
-- **Próximos passos:** escopo do papel *Gestor* ao próprio setor nos módulos do Pilar 2 (hoje enxerga a empresa toda); e-mail transacional além do *dry-run*; portal público para o titular abrir pedidos; PDF do diagnóstico por setor com comparativo; painel de KPIs de privacidade; e-mail único por empresa (hoje é global).
+- **Concluído (set/2026) — ciclo de auditoria de segurança e hardening:** chave secreta nunca pública; validação de FKs cross-tenant; cronômetro no servidor; migrações funcionando em PostgreSQL; PDFs com escape; métricas sem N+1; sessão com prazo real; ProxyFix/HSTS; reautenticação no 2FA; reset de senha; auditoria encadeada por hash; CI com lint, pip-audit e Postgres.
+- **Concluído (set/2026) — produto e conteúdo:** Gestor em modo leitura no Pilar 2; caixa de saída de e-mails; seed com 2 empresas e `demo-reset`; scripts Windows/Linux; portal público do titular com protocolo; prazos vivos (dias úteis, Res. 15/2024) e KPIs; anexos como evidência; anonimização, expurgo e portabilidade da empresa; banco de 229 questões e 7 trilhas com fonte oficial; prova 7+3 balanceada; QR no certificado; trilha lida; comparativo por setor; importação do ROPA; tour por papel.
+- **Próximos passos (fora do escopo de demonstração):** e-mail transacional real (SMTP/serviço); Redis para múltiplos workers; SSO; e-mail único por empresa (hoje é global); feriados no cálculo de dias úteis.
 
 ---
 

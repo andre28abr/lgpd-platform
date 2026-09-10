@@ -11,7 +11,7 @@
 <div class="grid grid-2">
   {% for trilha in lista %}
   <a class="card card-link" href="{{ url_for('trilhas.ver', slug=trilha.slug) }}">
-    <h3>{{ trilha.titulo }}</h3>
+    <div class="cert-head"><h3>{{ trilha.titulo }}</h3>{% if trilha.id in lidas %}<span class="pill pill-ok">lida</span>{% endif %}</div>
     <p class="muted">{{ trilha.resumo }}</p>
   </a>
   {% endfor %}

@@ -268,6 +268,17 @@ class Trilha(db.Model):
         return f"<Trilha {self.slug} area={self.area}>"
 
 
+class TrilhaLeitura(db.Model):
+    """Marca que o usuário concluiu a leitura de uma trilha (progresso do treinamento)."""
+    __tablename__ = "trilha_leituras"
+    __table_args__ = (db.UniqueConstraint("usuario_id", "trilha_id", name="uq_trilha_leitura"),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False, index=True)
+    trilha_id = db.Column(db.Integer, db.ForeignKey("trilhas.id"), nullable=False, index=True)
+    lido_em = db.Column(db.DateTime, default=agora_utc, nullable=False)
+
+
 class Questao(db.Model):
     """Questão de múltipla escolha do banco curado, ancorada em um artigo da lei."""
     __tablename__ = "questoes"

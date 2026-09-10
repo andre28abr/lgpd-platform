@@ -12,6 +12,14 @@
 </article>
 
 <div class="acoes-fim">
+  {% if leitura %}
+  <p class="pill pill-ok">Lida em {{ leitura.lido_em.strftime('%d/%m/%Y') }}</p>
+  {% else %}
+  <form method="post" action="{{ url_for('trilhas.marcar_lida', slug=trilha.slug) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-ghost" type="submit">Marcar como lida</button>
+  </form>
+  {% endif %}
   <form method="post" action="{{ url_for('provas.iniciar') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="area" value="{{ trilha.area }}">

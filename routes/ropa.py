@@ -95,6 +95,37 @@ def exportar_xlsx():
     )
 
 
+@bp.route("/modelo.xlsx")
+def modelo_xlsx():
+    from services.ropa_import import modelo_xlsx as gerar
+    return send_file(gerar(), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                     as_attachment=True, download_name="modelo-ropa.xlsx")
+
+
+@bp.route("/importar", methods=["POST"])
+def importar():
+    """Importa registros de uma planilha (xlsx/csv) — só o Encarregado (POST de gestor é 403)."""
+    from services.ropa_import import importar as importar_registros
+    from services.ropa_import import ler_planilha
+
+    arquivo = request.files.get("planilha")
+    if not arquivo or not arquivo.filename:
+        flash("Selecione a planilha.", "erro")
+        return redirect(url_for("ropa.listar"))
+    try:
+        registros = ler_planilha(arquivo, arquivo.filename)
+    except ValueError as erro:
+        flash(str(erro), "erro")
+        return redirect(url_for("ropa.listar"))
+    criados, avisos = importar_registros(current_user.empresa_id, registros)
+    registrar("ropa_importado", f"{criados} registro(s) de {arquivo.filename}")
+    db.session.commit()
+    flash(f"{criados} registro(s) importado(s).", "ok")
+    for aviso in avisos[:10]:
+        flash(aviso, "aviso")
+    return redirect(url_for("ropa.listar"))
+
+
 @bp.route("/relatorio.pdf")
 def relatorio_pdf():
     registrar("ropa_exportado", "pdf", commit=True)

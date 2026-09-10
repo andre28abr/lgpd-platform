@@ -11,9 +11,9 @@
   {% for dim, perguntas in grupos.items() %}
   <div class="section-head"><h2>{{ AREA_LABELS.get(dim) or perguntas[0].dimensao_label }}</h2></div>
   {% for p in perguntas %}
-  <div class="card diag-pergunta">
+  <div class="card diag-pergunta" role="group" aria-labelledby="p{{ p.id }}">
     <p class="dim">{{ p.dimensao_label }}</p>
-    <p class="questao-enunciado">{{ p.texto }}</p>
+    <p class="questao-enunciado" id="p{{ p.id }}">{{ p.texto }}</p>
     <div class="diag-opcoes">
       <label><input type="radio" name="p_{{ p.id }}" value="0" required> Não</label>
       <label><input type="radio" name="p_{{ p.id }}" value="1"> Parcial</label>

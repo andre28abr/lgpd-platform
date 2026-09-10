@@ -4,8 +4,9 @@
     {
       "name": "lgpd",
       "runtimeExecutable": "/Users/andresouza/Documents/Dev/Platform/lgpd-platform/.venv/bin/python",
-      "runtimeArgs": ["/Users/andresouza/Documents/Dev/Platform/lgpd-platform/app.py"],
-      "port": 8080
+      "runtimeArgs": ["/Users/andresouza/Documents/Dev/Platform/lgpd-platform/app.py", "--no-browser"],
+      "port": 8080,
+      "autoPort": true
     }
   ]
 }

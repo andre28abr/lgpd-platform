@@ -68,8 +68,11 @@ def executar_seed():
     print(f"Biblioteca: {novas_trilhas} trilha(s) e {novas_questoes} questão(ões) adicionadas/atualizadas.")
 
     if models.Empresa.query.filter_by(slug="acme").first():
+        if not models.Empresa.query.filter_by(slug="nova-era").first():
+            _seed_segunda_empresa()  # instalações antigas ganham a 2ª empresa (isolamento demonstrável)
+            print("Segunda empresa de demonstração (Nova Era Saúde) criada: dpo@novaera.com.br")
         db.session.commit()
-        print("Empresas de demonstração já existem — mantidas. Para recriar: flask demo-reset --confirmar")
+        print("Empresa Acme já existe — mantida. Para recriar tudo: flask demo-reset --confirmar")
         return
 
     _seed_empresa()

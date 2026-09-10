@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block titulo %}Comparativo por setor — Plataforma LGPD{% endblock %}
+{% block conteudo %}
+<div class="page-head">
+  <a class="link-voltar" href="{{ url_for('diagnostico.index') }}">Voltar aos diagnósticos</a>
+  <div class="section-head">
+    <h1>Maturidade por setor</h1>
+    {% if escopos %}<a class="btn btn-primary" href="{{ url_for('diagnostico.comparativo_pdf') }}">Baixar PDF</a>{% endif %}
+  </div>
+  <p class="muted">O diagnóstico concluído mais recente de cada escopo, lado a lado, por dimensão (% de pontos obtidos).</p>
+</div>
+
+{% if escopos %}
+<div class="card" style="overflow-x:auto;">
+  <table class="tabela comparativo">
+    <thead>
+      <tr>
+        <th>Dimensão</th>
+        {% for e in escopos %}<th>{{ e.label }}<br><small class="muted">{{ e.diag.finalizado_em.strftime('%d/%m/%Y') }}</small></th>{% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for code, label in dimensoes %}
+      <tr>
+        <td>{{ label }}</td>
+        {% for e in escopos %}
+          {% set pct = e.por_dim.get(code) %}
+          <td>{% if pct is none %}—{% else %}<span class="pill {{ 'pill-ok' if pct >= 70 else 'pill-alerta' }}">{{ pct }}%</span>{% endif %}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      <tr>
+        <td><strong>Score geral</strong></td>
+        {% for e in escopos %}<td><strong>{{ e.score }}%</strong><br><small class="muted">{{ e.nivel }}</small></td>{% endfor %}
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card"><p class="muted">Nenhum diagnóstico concluído ainda. {% if current_user.is_encarregado %}Aplique um diagnóstico para a empresa toda e um por setor para comparar.{% endif %}</p></div>
+{% endif %}
+{% endblock %}
