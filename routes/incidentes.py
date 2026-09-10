@@ -6,7 +6,7 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import gestor_somente_leitura, papeis
+from routes._helpers import gestor_somente_leitura, papeis, txt
 from services.auditoria import registrar
 from services.notificacoes import notificar_novo_incidente
 
@@ -57,7 +57,7 @@ def listar():
 @bp.route("/novo", methods=["GET", "POST"])
 def novo():
     if request.method == "POST":
-        titulo = (request.form.get("titulo") or "").strip()
+        titulo = txt(request.form.get("titulo"), 200)
         if not titulo:
             flash("Informe um título para o incidente.", "erro")
         else:

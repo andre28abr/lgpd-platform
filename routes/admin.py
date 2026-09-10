@@ -92,7 +92,8 @@ def usuarios():
             )
             novo.definir_senha(senha)
             db.session.add(novo)
-            registrar("usuario_criado", email)
+            db.session.flush()
+            registrar("usuario_criado", f"id={novo.id}")  # id, não e-mail: a trilha fica anonimizável
             db.session.commit()
             flash(f"Usuário '{nome}' criado.", "ok")
         return redirect(url_for("admin.usuarios"))
@@ -118,14 +119,14 @@ def usuario_editar(usuario_id):
                 flash(erro, "erro")
             else:
                 usuario.definir_senha(nova)
-                registrar("senha_redefinida", usuario.email)
+                registrar("senha_redefinida", f"id={usuario.id}")
                 db.session.commit()
                 flash("Senha redefinida.", "ok")
         elif acao == "reset2fa":
             usuario.mfa_ativo = False
             usuario.totp_secret = None
             models.RecoveryCode.query.filter_by(usuario_id=usuario.id).delete()
-            registrar("2fa_resetado", usuario.email)
+            registrar("2fa_resetado", f"id={usuario.id}")
             db.session.commit()
             flash("Verificação em duas etapas do usuário foi resetada.", "ok")
         elif acao == "anonimizar":
@@ -156,7 +157,7 @@ def usuario_editar(usuario_id):
                 models.Setor, request.form.get("setor_id"), current_user.empresa_id,
             )
             usuario.ativo = ativo
-            registrar("usuario_editado", usuario.email)
+            registrar("usuario_editado", f"id={usuario.id}")
             db.session.commit()
             flash("Usuário atualizado.", "ok")
         return redirect(url_for("admin.usuario_editar", usuario_id=usuario.id))
@@ -376,10 +377,12 @@ def auditoria_csv():
     buf = io.StringIO()
     escritor = csv.writer(buf)
     escritor.writerow(["data", "usuario", "acao", "detalhe", "ip"])
+    from services.pdf_utils import celula_planilha
     for log in registros:
         escritor.writerow([
             log.criado_em.strftime("%Y-%m-%d %H:%M:%S"),
-            log.usuario.email if log.usuario else "", log.acao, log.detalhe or "", log.ip or "",
+            celula_planilha(log.usuario.email if log.usuario else ""), celula_planilha(log.acao),
+            celula_planilha(log.detalhe or ""), log.ip or "",
         ])
     return Response(buf.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": "attachment; filename=auditoria.csv"})

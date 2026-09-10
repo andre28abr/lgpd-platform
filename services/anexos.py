@@ -45,9 +45,14 @@ def listar(tipo: str, alvo_id: int, empresa_id: int):
 def salvar(arquivo, empresa_id: int, tipo: str, alvo_id: int, usuario) -> models.Anexo:
     """Valida e grava. Levanta ValueError com mensagem para o usuário."""
     cfg = current_app.config
-    nome = secure_filename(arquivo.filename or "")
-    ext = nome.rsplit(".", 1)[-1].lower() if "." in nome else ""
-    if not nome or ext not in cfg["ANEXO_EXTENSOES"]:
+    original = arquivo.filename or ""
+    ext = original.rsplit(".", 1)[-1].lower() if "." in original else ""
+    # secure_filename apaga caracteres não-ASCII ("relatório.pdf" → "relatrio.pdf", "報告.pdf" → "pdf");
+    # a extensão vem do nome original e um nome vazio ganha um padrão, sem recusar o arquivo.
+    nome = secure_filename(original)
+    if ext and not nome.lower().endswith(f".{ext}"):  # nome virou "pdf" ou "" — sem o nome, mas com a extensão
+        nome = f"anexo.{ext}"
+    if not ext or ext not in cfg["ANEXO_EXTENSOES"]:
         raise ValueError("Tipo de arquivo não permitido. Aceitos: "
                          + ", ".join(sorted(cfg["ANEXO_EXTENSOES"])) + ".")
     dados = arquivo.read()
@@ -70,7 +75,7 @@ def salvar(arquivo, empresa_id: int, tipo: str, alvo_id: int, usuario) -> models
 
     anexo = models.Anexo(
         empresa_id=empresa_id, alvo_tipo=tipo, alvo_id=alvo_id, nome_original=nome[:255],
-        nome_arquivo=nome_arquivo, mime=arquivo.mimetype, tamanho=len(dados),
+        nome_arquivo=nome_arquivo, mime=(arquivo.mimetype or "")[:100], tamanho=len(dados),
         enviado_por_id=getattr(usuario, "id", None),
     )
     db.session.add(anexo)

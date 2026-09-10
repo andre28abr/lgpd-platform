@@ -52,9 +52,13 @@ def notificar_novo_pedido(pedido, empresa):
 
 
 def notificar_pedido_concluido(pedido):
-    if pedido.contato and "@" in pedido.contato:
+    from email.utils import parseaddr
+
+    # O contato vem do titular (inclusive pelo portal público): só um endereço, bem formado.
+    endereco = parseaddr(pedido.contato or "")[1]
+    if endereco and "@" in endereco:
         empresa = db.session.get(models.Empresa, pedido.empresa_id)
-        enviar(pedido.contato, "LGPD: seu pedido foi atendido",
+        enviar(endereco, "LGPD: seu pedido foi atendido",
                f"Olá, {pedido.nome_titular}. Seu pedido ({pedido.tipo_label}) foi concluído.",
                remetente=empresa.email_remetente if empresa else None, empresa_id=pedido.empresa_id)
 

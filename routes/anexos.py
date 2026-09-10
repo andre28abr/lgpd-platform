@@ -58,9 +58,16 @@ def _anexo_do_tenant(anexo_id):
 
 @bp.route("/<int:anexo_id>")
 def baixar(anexo_id):
+    import mimetypes
+    import os
+
     anexo = _anexo_do_tenant(anexo_id)
-    return send_file(svc.caminho(anexo), as_attachment=True, download_name=anexo.nome_original,
-                     mimetype=anexo.mime or "application/octet-stream")
+    caminho = svc.caminho(anexo)
+    if not os.path.exists(caminho):  # restore sem instance/uploads, ANEXOS_DIR trocado...
+        abort(404)
+    # O tipo vem da extensão validada no envio, não do Content-Type que o cliente declarou.
+    mime = mimetypes.guess_type(anexo.nome_original)[0] or "application/octet-stream"
+    return send_file(caminho, as_attachment=True, download_name=anexo.nome_original, mimetype=mime)
 
 
 @bp.route("/<int:anexo_id>/excluir", methods=["POST"])

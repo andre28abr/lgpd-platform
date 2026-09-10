@@ -15,7 +15,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 import models
 from extensions import db, limiter
-from routes._helpers import destino_seguro, slugify
+from routes._helpers import destino_seguro, slugify, txt
 from security import validar_senha
 from services.auditoria import registrar
 from utils import agora_utc
@@ -54,7 +54,9 @@ def login():
             session.permanent = True  # ativa PERMANENT_SESSION_LIFETIME (expiração real)
             login_user(usuario)
             usuario.ultimo_login = agora_utc()
-            registrar("login", email, usuario=usuario)
+            # Ações de conta existente registram o id, não o e-mail: a anonimização
+            # (services.ciclo_vida) precisa deixar a trilha sem dado pessoal em claro.
+            registrar("login", f"id={usuario.id}", usuario=usuario)
             db.session.commit()
             return redirect(destino_seguro(request.args.get("next")) or url_for("painel.index"))
 
@@ -73,7 +75,7 @@ def _registrar_falha(usuario):
         minutos = current_app.config["LOGIN_BLOQUEIO_MIN"]
         usuario.bloqueado_ate = agora_utc() + timedelta(minutes=minutos)
         usuario.tentativas_falhas = 0
-        registrar("conta_bloqueada", usuario.email, usuario=usuario)
+        registrar("conta_bloqueada", f"id={usuario.id}", usuario=usuario)
     db.session.commit()
 
 
@@ -98,10 +100,10 @@ def login_2fa():
             session.permanent = True
             login_user(usuario)
             usuario.ultimo_login = agora_utc()
-            registrar("login_2fa_recovery" if ok_recovery else "login_2fa", usuario.email, usuario=usuario)
+            registrar("login_2fa_recovery" if ok_recovery else "login_2fa", f"id={usuario.id}", usuario=usuario)
             db.session.commit()
             return redirect(destino_seguro(request.args.get("next")) or url_for("painel.index"))
-        registrar("login_2fa_falha", usuario.email, usuario=usuario, commit=True)
+        registrar("login_2fa_falha", f"id={usuario.id}", usuario=usuario, commit=True)
         flash("Código de verificação inválido.", "erro")
 
     return render_template("auth/login_2fa.html")
@@ -110,7 +112,7 @@ def login_2fa():
 @bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
-    registrar("logout", current_user.email, commit=True)
+    registrar("logout", f"id={current_user.id}", commit=True)
     logout_user()
     flash("Sessão encerrada com segurança.", "ok")
     return redirect(url_for("auth.login"))
@@ -124,9 +126,9 @@ def cadastro():
         return redirect(url_for("painel.index"))
 
     if request.method == "POST":
-        empresa_nome = (request.form.get("empresa") or "").strip()
-        nome = (request.form.get("nome") or "").strip()
-        email = (request.form.get("email") or "").strip().lower()
+        empresa_nome = txt(request.form.get("empresa"), 160)
+        nome = txt(request.form.get("nome"), 160)
+        email = txt(request.form.get("email"), 255).lower()
         senha = request.form.get("senha") or ""
         erro_senha = validar_senha(senha)
 
@@ -169,7 +171,7 @@ def esqueci_senha():
         usuario = models.Usuario.query.filter_by(email=email, ativo=True).first() if email else None
         if usuario:
             enviar_link(usuario)
-            registrar("senha_link_enviado", email, usuario=usuario, commit=True)
+            registrar("senha_link_enviado", f"id={usuario.id}", usuario=usuario, commit=True)
         else:
             registrar("senha_link_email_desconhecido", email, commit=True)
         # Resposta idêntica exista ou não a conta — sem enumeração de e-mails.
@@ -198,7 +200,7 @@ def redefinir_senha(token):
         else:
             usuario.definir_senha(senha)
             usuario.tentativas_falhas, usuario.bloqueado_ate = 0, None
-            registrar("senha_redefinida_por_link", usuario.email, usuario=usuario)
+            registrar("senha_redefinida_por_link", f"id={usuario.id}", usuario=usuario)
             db.session.commit()
             flash("Senha redefinida. Entre com a nova senha.", "ok")
             return redirect(url_for("auth.login"))

@@ -56,8 +56,11 @@ def ler_planilha(arquivo, nome: str) -> list[dict]:
     if ext == "xlsx":
         from openpyxl import load_workbook
 
-        ws = load_workbook(io.BytesIO(arquivo.read()), read_only=True, data_only=True).active
-        linhas = [[c for c in row] for row in ws.iter_rows(values_only=True)]
+        try:
+            ws = load_workbook(io.BytesIO(arquivo.read()), read_only=True, data_only=True).active
+            linhas = [list(row) for row in ws.iter_rows(values_only=True)] if ws is not None else []
+        except Exception as erro:  # noqa: BLE001 — zip inválido, .xls renomeado, arquivo truncado...
+            raise ValueError("Não consegui ler a planilha. Salve como .xlsx (Excel) ou .csv e tente de novo.") from erro
     elif ext == "csv":
         texto = arquivo.read().decode("utf-8-sig", errors="replace")
         delimitador = ";" if texto.count(";") > texto.count(",") else ","
@@ -68,12 +71,16 @@ def ler_planilha(arquivo, nome: str) -> list[dict]:
     linhas = [linha for linha in linhas if any(str(c or "").strip() for c in linha)]
     if not linhas:
         raise ValueError("A planilha está vazia.")
-    cabecalho = [_SINONIMOS.get(_norm(c)) for c in linhas[0]]
-    if "atividade" not in cabecalho:
+    # O cabeçalho é a primeira linha (entre as 10 primeiras) com a coluna 'Atividade' —
+    # assim o Excel exportado pelo próprio sistema (que tem título antes) é reimportável.
+    idx = next((i for i, linha in enumerate(linhas[:10])
+                if any(_SINONIMOS.get(_norm(c)) == "atividade" for c in linha)), None)
+    if idx is None:
         raise ValueError("Não encontrei a coluna 'Atividade'. Use o modelo (Baixar modelo) como referência.")
+    cabecalho = [_SINONIMOS.get(_norm(c)) for c in linhas[idx]]
 
     registros = []
-    for linha in linhas[1:]:
+    for linha in linhas[idx + 1:]:
         reg = {campo: "" for campo in _CAMPOS}
         for campo, valor in zip(cabecalho, linha, strict=False):
             if campo:

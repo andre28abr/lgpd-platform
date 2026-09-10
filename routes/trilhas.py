@@ -2,6 +2,7 @@
 from flask import Blueprint, abort, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
 
 import models
 from extensions import db
@@ -65,6 +66,9 @@ def marcar_lida(slug):
         abort(404)
     if not models.TrilhaLeitura.query.filter_by(usuario_id=current_user.id, trilha_id=trilha.id).first():
         db.session.add(models.TrilhaLeitura(usuario_id=current_user.id, trilha_id=trilha.id))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:  # dois cliques simultâneos: o segundo perde para o UNIQUE, sem 500
+            db.session.rollback()
     flash("Trilha marcada como lida.", "ok")
     return redirect(url_for("trilhas.ver", slug=slug))

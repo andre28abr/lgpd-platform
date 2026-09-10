@@ -5,6 +5,7 @@ não) fica registrado na caixa de saída (``EmailEnviado``), visível em
 Administração → E-mails. É o que permite demonstrar reset de senha e
 notificações sem depender de infraestrutura de e-mail.
 """
+import re
 import smtplib
 from email.message import EmailMessage
 
@@ -51,9 +52,14 @@ def enviar(destinatario: str, assunto: str, corpo: str, remetente: str | None = 
     de = _linha_unica(remetente) or cfg["MAIL_FROM"]
 
     if not servidor:
+        # Dry-run (demo): a caixa de saída é o ÚNICO canal — o link de reset fica íntegro
+        # para o fluxo funcionar. O Encarregado já pode redefinir senhas pelo admin.
         current_app.logger.info("email dry-run de=%s para=%s assunto=%r", de, destinatario, assunto)
         _registrar_saida(empresa_id, de, destinatario, assunto, corpo, enviado=False)
         return False
+
+    # Com SMTP real, a caixa de saída é só histórico: o token de reset não fica legível nela.
+    corpo_registro = re.sub(r"/senha/redefinir/\S+", "/senha/redefinir/<token>", corpo)
 
     enviado = False
     try:
@@ -72,5 +78,5 @@ def enviar(destinatario: str, assunto: str, corpo: str, remetente: str | None = 
         enviado = True
     except Exception:  # noqa: BLE001 — SMTP falha de muitas formas; todas viram log
         current_app.logger.exception("falha ao enviar e-mail para=%s assunto=%r", destinatario, assunto)
-    _registrar_saida(empresa_id, de, destinatario, assunto, corpo, enviado=enviado)
+    _registrar_saida(empresa_id, de, destinatario, assunto, corpo_registro, enviado=enviado)
     return enviado

@@ -6,7 +6,7 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import fk_do_tenant, gestor_somente_leitura, papeis
+from routes._helpers import fk_do_tenant, gestor_somente_leitura, papeis, txt
 from services.auditoria import registrar
 from services.notificacoes import notificar_novo_pedido, notificar_pedido_concluido
 from utils import agora_utc
@@ -43,14 +43,14 @@ def listar():
 @bp.route("/novo", methods=["GET", "POST"])
 def novo():
     if request.method == "POST":
-        nome = (request.form.get("nome_titular") or "").strip()
+        nome = txt(request.form.get("nome_titular"), 160)
         tipo = request.form.get("tipo") or ""
         if not nome or tipo not in models.TIPO_DIREITO_LABELS:
             flash("Informe o nome do titular e um tipo de pedido válido.", "erro")
         else:
             pedido = models.PedidoTitular(
                 empresa_id=current_user.empresa_id, nome_titular=nome,
-                contato=(request.form.get("contato") or "").strip(),
+                contato=txt(request.form.get("contato"), 255),
                 tipo=tipo, descricao=request.form.get("descricao") or "",
                 status="recebido", prazo=agora_utc() + timedelta(days=PRAZO_DIAS),
                 protocolo=models.PedidoTitular.gerar_protocolo(), origem="interno",

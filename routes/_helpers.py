@@ -73,6 +73,15 @@ def fk_do_tenant(modelo, valor, empresa_id):
     return obj.id
 
 
+def txt(valor, limite: int) -> str:
+    """Texto de formulário: tira espaços e corta no tamanho da coluna.
+
+    O SQLite aceita qualquer tamanho em silêncio; o PostgreSQL rejeita o INSERT e a
+    página viraria 500 — inclusive no portal público, que recebe entrada anônima.
+    """
+    return (valor or "").strip()[:limite]
+
+
 def slugify(texto: str) -> str:
     base = unicodedata.normalize("NFKD", texto or "").encode("ascii", "ignore").decode()
     base = re.sub(r"[^a-zA-Z0-9]+", "-", base).strip("-").lower()

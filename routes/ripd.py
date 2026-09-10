@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import fk_do_tenant, gestor_somente_leitura, papeis
+from routes._helpers import fk_do_tenant, gestor_somente_leitura, papeis, txt
 from services.auditoria import registrar
 from services.ripd_pdf import ripd_pdf
 
@@ -47,7 +47,7 @@ def form(rid=None):
     )
 
     if request.method == "POST":
-        titulo = (request.form.get("titulo") or "").strip()
+        titulo = txt(request.form.get("titulo"), 200)
         if not titulo:
             flash("Informe o título do relatório.", "erro")
         else:
@@ -80,7 +80,13 @@ def form(rid=None):
 
 @bp.route("/<int:rid>/excluir", methods=["POST"])
 def excluir(rid):
+    from services import anexos as svc_anexos
+
     relatorio = _do_empresa(rid)
+    # Anexos vão junto (linhas e arquivos); sem isso ficariam órfãos e, no SQLite, o próximo
+    # RIPD poderia reaproveitar o id e "herdar" as evidências do excluído.
+    for anexo in svc_anexos.listar("ripd", relatorio.id, current_user.empresa_id):
+        svc_anexos.excluir(anexo)
     registrar("ripd_excluido", relatorio.titulo)
     db.session.delete(relatorio)
     db.session.commit()

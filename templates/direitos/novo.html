@@ -8,8 +8,8 @@
 <div class="card">
   <form method="post" class="form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label class="campo"><span>Nome do titular</span><input type="text" name="nome_titular" required></label>
-    <label class="campo"><span>Contato (e-mail/telefone)</span><input type="text" name="contato"></label>
+    <label class="campo"><span>Nome do titular</span><input type="text" name="nome_titular" maxlength="160" required></label>
+    <label class="campo"><span>Contato (e-mail/telefone)</span><input type="text" name="contato" maxlength="255"></label>
     <label class="campo">
       <span>Tipo de pedido</span>
       <select name="tipo" required>

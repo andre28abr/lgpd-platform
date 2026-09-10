@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import gestor_somente_leitura, papeis
+from routes._helpers import fk_do_tenant, gestor_somente_leitura, papeis
 from services.auditoria import registrar
 from services.diagnostico import computar
 from services.diagnostico_pdf import diagnostico_pdf
@@ -49,14 +49,9 @@ def iniciar():
         flash("Nenhuma pergunta de diagnóstico cadastrada.", "aviso")
         return redirect(url_for("diagnostico.index"))
 
-    setor_id = request.form.get("setor_id") or None
-    if setor_id and not models.Setor.query.filter_by(
-            id=int(setor_id), empresa_id=current_user.empresa_id).first():
-        setor_id = None
-
     diag = models.Diagnostico(
         empresa_id=current_user.empresa_id, usuario_id=current_user.id,
-        setor_id=int(setor_id) if setor_id else None,
+        setor_id=fk_do_tenant(models.Setor, request.form.get("setor_id"), current_user.empresa_id),
     )
     db.session.add(diag)
     db.session.commit()

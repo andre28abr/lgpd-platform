@@ -69,9 +69,14 @@ def _carregar_ou_gerar_secret_key(instance_path: str) -> str:
         return secrets.token_hex(32)
     chave = secrets.token_hex(32)
     try:
-        with open(caminho, "w", encoding="utf-8") as f:
+        # "x": criação exclusiva — se vários workers subirem juntos, só um grava e os outros
+        # releem a mesma chave (senão cada worker teria a sua e sessão/CSRF falhariam ao acaso).
+        with open(caminho, "x", encoding="utf-8") as f:
             f.write(chave)
         os.chmod(caminho, 0o600)
+    except FileExistsError:
+        with open(caminho, encoding="utf-8") as f:
+            return f.read().strip() or chave
     except OSError:
         import logging
         logging.getLogger(__name__).warning(

@@ -22,8 +22,14 @@ def dias_uteis_desde(inicio, fim=None) -> int:
     fim = fim or agora_utc()
     if not inicio or fim <= inicio:
         return 0
-    dia, total = inicio.date() + timedelta(days=1), 0
-    while dia <= fim.date():
+    primeiro, ultimo = inicio.date() + timedelta(days=1), fim.date()
+    if ultimo < primeiro:
+        return 0
+    # O(1): semanas inteiras valem 5 dias úteis; só o resto é percorrido dia a dia.
+    semanas, resto = divmod((ultimo - primeiro).days + 1, 7)
+    total = semanas * 5
+    dia = primeiro + timedelta(days=semanas * 7)
+    for _ in range(resto):
         if dia.weekday() < 5:
             total += 1
         dia += timedelta(days=1)

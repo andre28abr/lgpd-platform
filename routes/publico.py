@@ -6,6 +6,7 @@ from sqlalchemy import text
 
 import models
 from extensions import db, limiter
+from routes._helpers import txt
 from services.auditoria import registrar
 from services.notificacoes import notificar_novo_pedido
 from utils import agora_utc
@@ -45,10 +46,10 @@ def titular(slug):
     publica este link no site/aviso de privacidade; na demo, ele fica na tela de login."""
     empresa = _empresa_ou_404(slug)
     if request.method == "POST":
-        nome = (request.form.get("nome_titular") or "").strip()
-        contato = (request.form.get("contato") or "").strip()
+        nome = txt(request.form.get("nome_titular"), 160)
+        contato = txt(request.form.get("contato"), 255)
         tipo = request.form.get("tipo") or ""
-        descricao = (request.form.get("descricao") or "").strip()
+        descricao = txt(request.form.get("descricao"), 4000)
         if not nome or not contato or tipo not in models.TIPO_DIREITO_LABELS:
             flash("Informe seu nome, um contato e o tipo de pedido.", "erro")
         else:
@@ -74,6 +75,7 @@ def titular_consultar(slug):
 
 
 @bp.route("/titular/<slug>/protocolo/<protocolo>")
+@limiter.limit("60 per hour")
 def titular_protocolo(slug, protocolo):
     """Andamento do pedido pelo protocolo. Mostra o mínimo: tipo, status e prazos —
     nunca os dados do titular (quem tem o código pode não ser o titular)."""

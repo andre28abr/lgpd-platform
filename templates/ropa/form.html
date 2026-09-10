@@ -10,7 +10,7 @@
   <form method="post" class="form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     {% if not current_user.is_encarregado %}<fieldset disabled style="border:0;padding:0;margin:0;display:contents;">{% endif %}
-    <label class="campo"><span>Atividade de tratamento</span><input type="text" name="atividade" value="{{ reg.atividade if reg else '' }}" required></label>
+    <label class="campo"><span>Atividade de tratamento</span><input type="text" name="atividade" value="{{ reg.atividade if reg else '' }}" maxlength="200" required></label>
     <div class="form-row">
       <label class="campo">
         <span>Setor</span>

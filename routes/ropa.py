@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 
 import models
 from extensions import db
-from routes._helpers import fk_do_tenant, gestor_somente_leitura, papeis
+from routes._helpers import fk_do_tenant, gestor_somente_leitura, papeis, txt
 from services.auditoria import registrar
 from services.ropa_export import ropa_excel, ropa_pdf
 
@@ -44,7 +44,7 @@ def form(reg_id=None):
     setores = models.Setor.query.filter_by(empresa_id=current_user.empresa_id).order_by(models.Setor.nome).all()
 
     if request.method == "POST":
-        atividade = (request.form.get("atividade") or "").strip()
+        atividade = txt(request.form.get("atividade"), 200)
         if not atividade:
             flash("Informe a atividade de tratamento.", "erro")
         else:
@@ -53,12 +53,12 @@ def form(reg_id=None):
                 db.session.add(reg)
             reg.setor_id = fk_do_tenant(models.Setor, request.form.get("setor_id"), current_user.empresa_id)
             reg.atividade = atividade
-            reg.titulares = (request.form.get("titulares") or "").strip()
+            reg.titulares = txt(request.form.get("titulares"), 255)
             reg.categorias_dados = request.form.get("categorias_dados") or ""
             reg.finalidade = request.form.get("finalidade") or ""
             base = request.form.get("base_legal") or ""
             reg.base_legal = base if base in models.BASE_LEGAL_LABELS else None
-            reg.retencao = (request.form.get("retencao") or "").strip()
+            reg.retencao = txt(request.form.get("retencao"), 255)
             reg.compartilhamento = request.form.get("compartilhamento") or ""
             registrar("ropa_salvo", atividade)
             db.session.commit()

@@ -37,7 +37,7 @@ def ativar_2fa():
             current_user.mfa_ativo = True
             session.pop("_2fa_secret_prov", None)
             session["_recovery_show"] = gerar_codigos(current_user)
-            registrar("2fa_ativado", current_user.email)
+            registrar("2fa_ativado", f"id={current_user.id}")
             db.session.commit()
             flash("Verificação em duas etapas ativada. Guarde seus códigos de recuperação.", "ok")
             return redirect(url_for("perfil.codigos"))
@@ -64,7 +64,7 @@ def _senha_confirmada() -> bool:
     """
     if current_user.conferir_senha(request.form.get("senha") or ""):
         return True
-    registrar("2fa_reautenticacao_falha", current_user.email, commit=True)
+    registrar("2fa_reautenticacao_falha", f"id={current_user.id}", commit=True)
     flash("Senha atual incorreta. Nenhuma alteração no 2FA foi feita.", "erro")
     return False
 
@@ -74,7 +74,7 @@ def _senha_confirmada() -> bool:
 def regenerar_codigos():
     if current_user.mfa_ativo and _senha_confirmada():
         session["_recovery_show"] = gerar_codigos(current_user)
-        registrar("2fa_codigos_regenerados", current_user.email)
+        registrar("2fa_codigos_regenerados", f"id={current_user.id}")
         db.session.commit()
         return redirect(url_for("perfil.codigos"))
     return redirect(url_for("perfil.index"))
@@ -88,7 +88,7 @@ def desativar_2fa():
     current_user.mfa_ativo = False
     current_user.totp_secret = None
     models_limpar_recovery(current_user)
-    registrar("2fa_desativado", current_user.email)
+    registrar("2fa_desativado", f"id={current_user.id}")
     db.session.commit()
     flash("Verificação em duas etapas desativada.", "ok")
     return redirect(url_for("perfil.index"))

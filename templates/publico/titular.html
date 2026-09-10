@@ -11,8 +11,8 @@
 
     <form method="post" action="{{ url_for('publico.titular', slug=empresa.slug) }}" class="form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <label class="campo"><span>Seu nome</span><input type="text" name="nome_titular" required autofocus></label>
-      <label class="campo"><span>Contato para resposta (e-mail ou telefone)</span><input type="text" name="contato" required></label>
+      <label class="campo"><span>Seu nome</span><input type="text" name="nome_titular" maxlength="160" required autofocus></label>
+      <label class="campo"><span>Contato para resposta (e-mail ou telefone)</span><input type="text" name="contato" maxlength="255" required></label>
       <label class="campo">
         <span>O que você deseja</span>
         <select name="tipo" required>
