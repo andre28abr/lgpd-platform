@@ -1,3 +1,6 @@
 # Dependências apenas de desenvolvimento/testes (não vão para produção).
 -r requirements.txt
 pytest>=8.0
+pytest-cov>=6.0        # cobertura (o CI exige piso mínimo)
+ruff>=0.9              # lint + ordem de imports (config em ruff.toml)
+pip-audit>=2.7         # vulnerabilidades conhecidas nas dependências

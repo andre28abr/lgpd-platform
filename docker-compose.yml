@@ -28,11 +28,16 @@ services:
     environment:
       DATABASE_URL: postgresql://lgpd:lgpd@db:5432/lgpd
       RATELIMIT_STORAGE_URI: redis://redis:6379
-      SECRET_KEY: ${SECRET_KEY:-troque-esta-chave-em-producao}
+      # Sem SECRET_KEY no ambiente, a app gera uma chave aleatória e a guarda em
+      # /app/instance (volume abaixo) — nunca um valor público conhecido.
+      # Em produção, defina SECRET_KEY no .env do host.
+      SECRET_KEY: ${SECRET_KEY:-}
       SESSION_COOKIE_SECURE: "false"
       SEED_DEMO: "1"
     ports:
       - "8080:8080"
+    volumes:
+      - appdata:/app/instance
     depends_on:
       db:
         condition: service_healthy
@@ -41,3 +46,4 @@ services:
 
 volumes:
   pgdata:
+  appdata:

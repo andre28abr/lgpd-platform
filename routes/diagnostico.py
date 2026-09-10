@@ -1,5 +1,4 @@
 """Diagnóstico de maturidade em privacidade (nível empresa)."""
-from datetime import datetime
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
@@ -7,10 +6,10 @@ from flask_login import current_user, login_required
 import models
 from extensions import db
 from routes._helpers import papeis
-from utils import agora_utc
 from services.auditoria import registrar
 from services.diagnostico import computar
 from services.diagnostico_pdf import diagnostico_pdf
+from utils import agora_utc
 
 bp = Blueprint("diagnostico", __name__, url_prefix="/diagnostico")
 

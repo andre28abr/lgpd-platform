@@ -6,10 +6,9 @@ recriar do zero, apague o banco (instance/lgpd.db) e rode `flask seed` de novo.
 O conteúdo é ancorado na Lei nº 13.709/2018 (LGPD). As questões trazem o artigo
 de referência e uma explicação, exibidos na correção da prova.
 """
-from datetime import datetime
 
-from extensions import db
 import models
+from extensions import db
 from utils import agora_utc
 
 SENHA_DEMO = "lgpd1234"
@@ -469,7 +468,7 @@ def executar_seed():
         return
 
     _seed_biblioteca()
-    empresa = _seed_empresa()
+    _seed_empresa()
     db.session.commit()
     print("Seed concluído.")
     print("  Login de demonstração: dpo@acme.com.br / paula@acme.com.br / ana@acme.com.br")

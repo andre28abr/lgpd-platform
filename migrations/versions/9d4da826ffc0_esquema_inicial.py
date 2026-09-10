@@ -1,13 +1,12 @@
 """esquema inicial
 
 Revision ID: 9d4da826ffc0
-Revises: 
+Revises:
 Create Date: 2026-06-17 11:23:55.084417
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '9d4da826ffc0'

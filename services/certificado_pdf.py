@@ -68,7 +68,7 @@ def gerar_pdf(cert) -> BytesIO:
 
     try:
         url = url_for("certificados.verificar", codigo=cert.codigo, _external=True)
-    except Exception:
+    except RuntimeError:  # fora de uma requisição (ex.: CLI) não há URL externa
         url = f"/certificados/verificar/{cert.codigo}"
     c.drawRightString(largura - 28 * mm, 26 * mm, f"Código: {cert.codigo}")
     c.setFont("Helvetica", 8)

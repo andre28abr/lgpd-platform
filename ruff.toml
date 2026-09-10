@@ -1,0 +1,11 @@
+# Lint (ruff). Rodar localmente: ruff check .   |   corrigir o que é seguro: ruff check . --fix
+line-length = 120
+target-version = "py312"
+
+[lint]
+# E/W = pycodestyle · F = pyflakes · I = ordem de imports · B = bugbear · BLE = except genérico
+select = ["E", "F", "W", "I", "B", "BLE"]
+
+[lint.per-file-ignores]
+# Migrações são geradas pelo Alembic; não vale a pena "embelezar" à mão.
+"migrations/versions/*.py" = ["E501", "I"]

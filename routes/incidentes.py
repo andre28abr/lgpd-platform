@@ -91,7 +91,9 @@ def gerir(iid):
         inc.comunicado_anpd = request.form.get("comunicado_anpd") == "on"
         inc.comunicado_anpd_em = _data(request.form.get("comunicado_anpd_em")) if inc.comunicado_anpd else None
         inc.comunicado_titulares = request.form.get("comunicado_titulares") == "on"
-        inc.comunicado_titulares_em = _data(request.form.get("comunicado_titulares_em")) if inc.comunicado_titulares else None
+        inc.comunicado_titulares_em = (
+            _data(request.form.get("comunicado_titulares_em")) if inc.comunicado_titulares else None
+        )
         inc.medidas = request.form.get("medidas") or ""
         registrar("incidente_atualizado", f"{inc.id} -> {inc.status}")
         db.session.commit()
