@@ -53,6 +53,7 @@ def novo():
                 contato=(request.form.get("contato") or "").strip(),
                 tipo=tipo, descricao=request.form.get("descricao") or "",
                 status="recebido", prazo=agora_utc() + timedelta(days=PRAZO_DIAS),
+                protocolo=models.PedidoTitular.gerar_protocolo(), origem="interno",
             )
             db.session.add(pedido)
             registrar("pedido_titular_registrado", f"{tipo} - {nome}")

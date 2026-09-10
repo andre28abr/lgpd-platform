@@ -608,6 +608,8 @@ def _seed_pilar2(empresa, setores, usuarios):
             status=status, prazo=agora + timedelta(days=dias), responsavel_id=resp.id if resp else None,
             observacoes=obs, concluido_em=agora - timedelta(days=1) if status == "concluido" else None,
             criado_em=agora - timedelta(days=15 - dias),
+            protocolo=models.PedidoTitular.gerar_protocolo(),
+            origem="portal" if nome == "Carlos Pereira" else "interno",
         ))
 
     db.session.add(models.Ripd(

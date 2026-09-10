@@ -253,6 +253,21 @@ def register_cli(app: Flask) -> None:
             print(f"{empresa.slug}: {enviados} de {total} pendente(s) notificado(s)")
         print(f"Total enviado: {total_enviados}")
 
+    @app.cli.command("prazos")
+    @click.option("--email", is_flag=True, help="Também envia o resumo por e-mail aos Encarregados.")
+    def prazos(email):
+        """Lista os alertas de prazo (pedidos, incidentes/ANPD, RIPDs) de cada empresa. Útil no cron."""
+        import models
+        from services.prazos import alertas_empresa, notificar_prazos
+        for empresa in models.Empresa.query.filter_by(ativo=True).all():
+            a = alertas_empresa(empresa.id)
+            print(f"{empresa.slug}: {len(a['pedidos_atrasados'])} pedido(s) atrasado(s), "
+                  f"{len(a['pedidos_vencendo'])} vencendo, {len(a['incidentes_sem_anpd'])} incidente(s) "
+                  f"sem ANPD, {a['ripd_rascunho']} RIPD(s) em rascunho")
+            if email and a["total"]:
+                enviados, _ = notificar_prazos(empresa)
+                print(f"  e-mail: {enviados} Encarregado(s) notificado(s)")
+
     @app.cli.command("demo-reset")
     @click.option("--confirmar", is_flag=True, help="Confirma a recriação (apaga TODOS os dados).")
     @click.option("--forcar", is_flag=True, help="Permite rodar fora do SQLite (cuidado).")

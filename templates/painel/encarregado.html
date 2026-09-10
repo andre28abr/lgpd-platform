@@ -25,6 +25,64 @@
   </div>
 </div>
 
+{% if alertas.total %}
+<div class="section-head"><h2>Atenção agora</h2></div>
+<div class="card alerta-card">
+  <ul class="lista-alertas">
+    {% for p in alertas.pedidos_atrasados %}
+    <li><span class="pill pill-alerta">atrasado</span> Pedido <a href="{{ url_for('direitos.gerir', pid=p.id) }}">{{ p.protocolo or p.id }}</a> ({{ p.tipo_label }}) venceu em {{ p.prazo.strftime('%d/%m/%Y') }}.</li>
+    {% endfor %}
+    {% for p in alertas.pedidos_vencendo %}
+    <li><span class="pill">vencendo</span> Pedido <a href="{{ url_for('direitos.gerir', pid=p.id) }}">{{ p.protocolo or p.id }}</a> ({{ p.tipo_label }}) até {{ p.prazo.strftime('%d/%m/%Y') }}.</li>
+    {% endfor %}
+    {% for i in alertas.incidentes_sem_anpd %}
+    <li>
+      {% if i.estourado %}<span class="pill pill-alerta">prazo ANPD estourado</span>
+      {% elif i.exigivel %}<span class="pill pill-alerta">comunicar ANPD</span>
+      {% else %}<span class="pill">avaliar comunicação</span>{% endif %}
+      Incidente <a href="{{ url_for('incidentes.gerir', iid=i.incidente.id) }}">{{ i.incidente.titulo }}</a> — {{ i.dias_uteis }} dia(s) útil(eis) desde a ciência (prazo: {{ prazo_anpd }} dias úteis, Resolução CD/ANPD nº 15/2024).
+    </li>
+    {% endfor %}
+    {% if alertas.ripd_rascunho %}
+    <li><span class="pill">rascunho</span> {{ alertas.ripd_rascunho }} <a href="{{ url_for('ripd.listar') }}">RIPD(s)</a> ainda não concluído(s).</li>
+    {% endif %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="section-head"><h2>Indicadores de privacidade</h2></div>
+<div class="grid grid-4">
+  <div class="card metric">
+    <span class="metric-num">{{ kpis.pedidos.pct_no_prazo ~ '%' if kpis.pedidos.pct_no_prazo is not none else '—' }}</span>
+    <span class="metric-lbl">Pedidos respondidos no prazo</span>
+  </div>
+  <div class="card metric">
+    <span class="metric-num">{{ kpis.pedidos.abertos }}{% if kpis.pedidos.atrasados %} <small class="st-vencido">({{ kpis.pedidos.atrasados }} atrasado(s))</small>{% endif %}</span>
+    <span class="metric-lbl">Pedidos em aberto</span>
+  </div>
+  <div class="card metric">
+    <span class="metric-num">{{ kpis.incidentes.abertos }}</span>
+    <span class="metric-lbl">Incidentes abertos{% if kpis.incidentes.sem_anpd %} · {{ kpis.incidentes.sem_anpd }} sem ANPD{% endif %}</span>
+  </div>
+  <div class="card metric">
+    <span class="metric-num">{{ kpis.ripd.total }}{% if kpis.ripd.rascunho %} <small>({{ kpis.ripd.rascunho }} rascunho)</small>{% endif %}</span>
+    <span class="metric-lbl">RIPDs</span>
+  </div>
+</div>
+
+<div class="card">
+  <h3>ROPA por base legal <span class="muted">— {{ kpis.ropa.total }} tratamento(s){% if kpis.ropa.sem_base %}, {{ kpis.ropa.sem_base }} sem base definida{% endif %}</span></h3>
+  {% for b in kpis.ropa.por_base %}
+  <div class="barra-linha">
+    <span class="barra-rotulo">{{ b.label }}</span>
+    <div class="barra"><span style="width:{{ b.pct }}%"></span></div>
+    <span class="barra-valor">{{ b.n }}</span>
+  </div>
+  {% else %}
+  <p class="muted">Nenhum tratamento registrado. <a href="{{ url_for('ropa.form') }}">Comece o ROPA</a>.</p>
+  {% endfor %}
+</div>
+
 <div class="section-head">
   <h2>Ranking de setores</h2>
   <a class="btn btn-ghost" href="{{ url_for('ranking.index') }}">Ver detalhes</a>

@@ -11,6 +11,7 @@ Conceitos centrais:
   - Prova / ProvaItem  uma aplicação de avaliação + as questões sorteadas.
   - Certificado ..... emitido quando a prova é aprovada; tem validade e código.
 """
+import secrets
 from datetime import datetime, timedelta
 
 from flask_login import UserMixin
@@ -567,8 +568,18 @@ class PedidoTitular(db.Model):
     prazo = db.Column(db.DateTime)
     concluido_em = db.Column(db.DateTime)
     observacoes = db.Column(db.Text)
+    # Protocolo público (ex.: LGPD-3F9A21C0): o titular acompanha o pedido sem login.
+    protocolo = db.Column(db.String(20), unique=True, index=True)
+    origem = db.Column(db.String(20))  # "portal" (aberto pelo titular) ou "interno"
 
     responsavel = db.relationship("Usuario")
+
+    @staticmethod
+    def gerar_protocolo() -> str:
+        while True:
+            codigo = "LGPD-" + secrets.token_hex(4).upper()
+            if not PedidoTitular.query.filter_by(protocolo=codigo).first():
+                return codigo
 
     @property
     def tipo_label(self):

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}Protocolo {{ protocolo }} — {{ empresa.nome }}{% endblock %}
+{% block conteudo %}
+<div class="login-wrap">
+  <div class="card login-card">
+    <div class="login-head">
+      <span class="brand-mark brand-mark-lg">LGPD</span>
+      <h1>Andamento do pedido</h1>
+      <p class="muted">{{ empresa.nome }}</p>
+    </div>
+    {% if pedido %}
+      <div class="verif-box {{ 'res-ok' if pedido.status == 'concluido' else 'res-falha' }}">
+        <p class="pill {{ 'pill-ok' if pedido.status == 'concluido' else ('pill-alerta' if pedido.atrasado else '') }}">{{ pedido.status_label }}</p>
+      </div>
+      <ul class="verif-dados">
+        <li><span>Protocolo</span><strong>{{ pedido.protocolo }}</strong></li>
+        <li><span>Pedido</span><strong>{{ pedido.tipo_label }}</strong></li>
+        <li><span>Recebido em</span><strong>{{ pedido.criado_em.strftime('%d/%m/%Y') }}</strong></li>
+        <li><span>Previsão de resposta</span><strong>{{ pedido.prazo.strftime('%d/%m/%Y') if pedido.prazo else '—' }}</strong></li>
+        {% if pedido.concluido_em %}<li><span>Concluído em</span><strong>{{ pedido.concluido_em.strftime('%d/%m/%Y') }}</strong></li>{% endif %}
+      </ul>
+      <p class="muted" style="margin-top:1rem;">Guarde o protocolo. A resposta será enviada ao contato informado no pedido.</p>
+    {% else %}
+      <div class="verif-box res-falha"><p class="pill pill-alerta">Protocolo não encontrado</p></div>
+      <p class="muted">Nenhum pedido corresponde a <code>{{ protocolo }}</code> nesta empresa.</p>
+    {% endif %}
+    <p class="muted" style="margin-top:1rem; text-align:center;"><a href="{{ url_for('publico.titular', slug=empresa.slug) }}">Abrir outro pedido ou consultar protocolo</a></p>
+  </div>
+</div>
+{% endblock %}

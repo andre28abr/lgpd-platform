@@ -2,12 +2,14 @@
 from flask import Blueprint, render_template
 from flask_login import current_user, login_required
 
+from services.kpis import kpis_empresa
 from services.metricas import (
     certificado_vigente,
     resumo_empresa,
     resumo_setor,
     ultima_prova,
 )
+from services.prazos import PRAZO_ANPD_DIAS_UTEIS, alertas_empresa
 
 bp = Blueprint("painel", __name__)
 
@@ -18,7 +20,13 @@ def index():
     usuario = current_user
 
     if usuario.is_encarregado:
-        return render_template("painel/encarregado.html", dados=resumo_empresa(usuario.empresa_id))
+        return render_template(
+            "painel/encarregado.html",
+            dados=resumo_empresa(usuario.empresa_id),
+            alertas=alertas_empresa(usuario.empresa_id),
+            kpis=kpis_empresa(usuario.empresa_id),
+            prazo_anpd=PRAZO_ANPD_DIAS_UTEIS,
+        )
 
     if usuario.is_gestor:
         resumo = resumo_setor(usuario.setor) if usuario.setor else None

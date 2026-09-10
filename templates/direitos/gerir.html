@@ -10,6 +10,7 @@
 <div class="grid grid-2">
   <div class="card">
     <h3>Detalhes</h3>
+    <p class="muted">Protocolo: <code>{{ pedido.protocolo or '—' }}</code>{% if pedido.origem == 'portal' %} — aberto pelo titular no portal público{% endif %}</p>
     <p class="muted">Recebido em {{ pedido.criado_em.strftime('%d/%m/%Y') }}.</p>
     <p class="muted">Prazo: <strong{% if pedido.atrasado %} class="st-vencido"{% endif %}>{{ pedido.prazo.strftime('%d/%m/%Y') if pedido.prazo else '—' }}</strong>{% if pedido.dias_para_prazo is not none and pedido.status not in ('concluido','recusado') %} ({{ pedido.dias_para_prazo }} dias){% endif %}</p>
     {% if pedido.descricao %}<p>{{ pedido.descricao }}</p>{% endif %}

@@ -268,3 +268,14 @@ a.user-meta:hover .user-name { text-decoration: underline; }
 .lista-feed { list-style: none; padding: 0; margin: 0; }
 .lista-feed li { padding: .5rem 0; border-bottom: 1px solid var(--borda); }
 .lista-feed li:last-child { border-bottom: none; }
+
+/* ── Painel do Encarregado: alertas e indicadores ── */
+.alerta-card { border-left: 4px solid var(--erro); }
+.lista-alertas { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem; font-size: .92rem; }
+.lista-alertas .pill { margin-right: .4rem; }
+.metric-num small { font-size: .8rem; font-weight: normal; color: var(--muted); }
+.barra-linha { display: grid; grid-template-columns: minmax(160px, 1fr) 3fr auto; gap: .8rem; align-items: center; margin: .45rem 0; font-size: .9rem; }
+.barra-rotulo { color: var(--muted); }
+.barra { background: #eeede8; border-radius: 6px; height: 10px; overflow: hidden; }
+.barra span { display: block; height: 100%; background: var(--primaria); border-radius: 6px; }
+.barra-valor { color: var(--muted); min-width: 1.5rem; text-align: right; }

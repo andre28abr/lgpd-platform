@@ -10,10 +10,11 @@
 </div>
 <div class="card">
   <table class="tabela">
-    <thead><tr><th>Titular</th><th>Tipo</th><th>Status</th><th>Prazo</th><th></th></tr></thead>
+    <thead><tr><th>Protocolo</th><th>Titular</th><th>Tipo</th><th>Status</th><th>Prazo</th><th></th></tr></thead>
     <tbody>
       {% for p in pedidos %}
       <tr>
+        <td><code>{{ p.protocolo or '—' }}</code>{% if p.origem == 'portal' %} <span class="pill">portal</span>{% endif %}</td>
         <td>{{ p.nome_titular }}</td>
         <td>{{ p.tipo_label }}</td>
         <td>
@@ -25,7 +26,7 @@
         <td><a href="{{ url_for('direitos.gerir', pid=p.id) }}">{{ 'Gerir' if current_user.is_encarregado else 'Ver' }}</a></td>
       </tr>
       {% else %}
-      <tr><td colspan="5" class="muted">Nenhum pedido registrado.</td></tr>
+      <tr><td colspan="6" class="muted">Nenhum pedido registrado.</td></tr>
       {% endfor %}
     </tbody>
   </table>
