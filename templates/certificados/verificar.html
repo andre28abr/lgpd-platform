@@ -23,7 +23,8 @@
           <li><span>Titular</span><strong>{{ cert.usuario.nome }}</strong></li>
           <li><span>Empresa</span><strong>{{ cert.usuario.empresa.nome }}</strong></li>
           <li><span>Área</span><strong>{{ cert.area_label }}</strong></li>
-          <li><span>Aproveitamento</span><strong>{{ cert.nota|round|int }}%</strong></li>
+          {# A nota é dado pessoal do titular e não é necessária para atestar autenticidade
+             (minimização — Art. 6º, III). Ela continua no PDF, que é do próprio titular. #}
           <li><span>Emitido em</span><strong>{{ cert.emitido_em.strftime('%d/%m/%Y') }}</strong></li>
           <li><span>Válido até</span><strong>{{ cert.valido_ate.strftime('%d/%m/%Y') }}</strong></li>
           <li><span>Código</span><strong>{{ cert.codigo }}</strong></li>

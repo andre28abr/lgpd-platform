@@ -56,10 +56,23 @@ def codigos():
     return render_template("perfil/codigos.html", codigos=codigos)
 
 
+def _senha_confirmada() -> bool:
+    """Reautenticação: ações que enfraquecem o 2FA exigem a senha atual.
+
+    Sem isso, uma sessão sequestrada ou um computador deixado aberto bastaria
+    para desligar o segundo fator com um único POST.
+    """
+    if current_user.conferir_senha(request.form.get("senha") or ""):
+        return True
+    registrar("2fa_reautenticacao_falha", current_user.email, commit=True)
+    flash("Senha atual incorreta. Nenhuma alteração no 2FA foi feita.", "erro")
+    return False
+
+
 @bp.route("/2fa/codigos/regenerar", methods=["POST"])
 @login_required
 def regenerar_codigos():
-    if current_user.mfa_ativo:
+    if current_user.mfa_ativo and _senha_confirmada():
         session["_recovery_show"] = gerar_codigos(current_user)
         registrar("2fa_codigos_regenerados", current_user.email)
         db.session.commit()
@@ -70,6 +83,8 @@ def regenerar_codigos():
 @bp.route("/2fa/desativar", methods=["POST"])
 @login_required
 def desativar_2fa():
+    if not _senha_confirmada():
+        return redirect(url_for("perfil.index"))
     current_user.mfa_ativo = False
     current_user.totp_secret = None
     models_limpar_recovery(current_user)

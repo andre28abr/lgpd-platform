@@ -1,17 +1,24 @@
 """Autenticação: login (rate limit, bloqueio de conta, 2FA), logout e cadastro."""
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from flask import (
-    Blueprint, current_app, flash, redirect, render_template, request, session, url_for,
+    Blueprint,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
 import models
 from extensions import db, limiter
 from routes._helpers import destino_seguro, slugify
-from utils import agora_utc
 from security import validar_senha
 from services.auditoria import registrar
+from utils import agora_utc
 
 bp = Blueprint("auth", __name__)
 
@@ -29,7 +36,12 @@ def login():
 
         if usuario and usuario.esta_bloqueado:
             registrar("login_bloqueado", email, commit=True)
-            flash("Conta temporariamente bloqueada por tentativas malsucedidas. Tente mais tarde.", "erro")
+            # Só confirma o bloqueio a quem provou saber a senha; sem ela a resposta
+            # é a genérica — a mensagem de bloqueio não pode servir para enumerar contas.
+            if usuario.conferir_senha(senha):
+                flash("Conta temporariamente bloqueada por tentativas malsucedidas. Tente mais tarde.", "erro")
+            else:
+                flash("E-mail ou senha inválidos.", "erro")
             return render_template("auth/login.html")
 
         if usuario and usuario.conferir_senha(senha):
@@ -39,6 +51,7 @@ def login():
                 session["_pre_2fa_user"] = usuario.id
                 db.session.commit()
                 return redirect(url_for("auth.login_2fa", next=request.args.get("next")))
+            session.permanent = True  # ativa PERMANENT_SESSION_LIFETIME (expiração real)
             login_user(usuario)
             usuario.ultimo_login = agora_utc()
             registrar("login", email, usuario=usuario)
@@ -75,12 +88,14 @@ def login_2fa():
 
     if request.method == "POST":
         import pyotp
+
         from services.recovery import consumir
         bruto = (request.form.get("codigo") or "").replace(" ", "")
         ok_totp = bool(usuario.totp_secret) and pyotp.TOTP(usuario.totp_secret).verify(bruto, valid_window=1)
         ok_recovery = (not ok_totp) and consumir(usuario, bruto)
         if ok_totp or ok_recovery:
             session.pop("_pre_2fa_user", None)
+            session.permanent = True
             login_user(usuario)
             usuario.ultimo_login = agora_utc()
             registrar("login_2fa_recovery" if ok_recovery else "login_2fa", usuario.email, usuario=usuario)
@@ -133,11 +148,62 @@ def cadastro():
             db.session.flush()
             registrar("cadastro_empresa", f"{empresa.slug} / {email}", usuario=usuario, empresa_id=empresa.id)
             db.session.commit()
+            session.permanent = True
             login_user(usuario)
             flash("Empresa criada. Comece cadastrando seus setores e colaboradores.", "ok")
             return redirect(url_for("painel.index"))
 
     return render_template("auth/cadastro.html")
+
+
+@bp.route("/senha/esqueci", methods=["GET", "POST"])
+@limiter.limit("5 per 15 minutes", methods=["POST"])
+def esqueci_senha():
+    if current_user.is_authenticated:
+        return redirect(url_for("painel.index"))
+
+    if request.method == "POST":
+        from services.senha import enviar_link
+
+        email = (request.form.get("email") or "").strip().lower()
+        usuario = models.Usuario.query.filter_by(email=email, ativo=True).first() if email else None
+        if usuario:
+            enviar_link(usuario)
+            registrar("senha_link_enviado", email, usuario=usuario, commit=True)
+        else:
+            registrar("senha_link_email_desconhecido", email, commit=True)
+        # Resposta idêntica exista ou não a conta — sem enumeração de e-mails.
+        flash("Se o e-mail estiver cadastrado, enviamos um link para redefinir a senha (válido por 1 hora).", "ok")
+        return redirect(url_for("auth.login"))
+
+    return render_template("auth/esqueci_senha.html")
+
+
+@bp.route("/senha/redefinir/<token>", methods=["GET", "POST"])
+@limiter.limit("10 per 15 minutes", methods=["POST"])
+def redefinir_senha(token):
+    from services.senha import usuario_do_token
+
+    usuario = usuario_do_token(token)
+    if not usuario:
+        flash("Link inválido, expirado ou já utilizado. Solicite um novo.", "erro")
+        return redirect(url_for("auth.esqueci_senha"))
+
+    if request.method == "POST":
+        senha = request.form.get("senha") or ""
+        confirmacao = request.form.get("confirmacao") or ""
+        erro = validar_senha(senha) or ("As senhas não conferem." if senha != confirmacao else None)
+        if erro:
+            flash(erro, "erro")
+        else:
+            usuario.definir_senha(senha)
+            usuario.tentativas_falhas, usuario.bloqueado_ate = 0, None
+            registrar("senha_redefinida_por_link", usuario.email, usuario=usuario)
+            db.session.commit()
+            flash("Senha redefinida. Entre com a nova senha.", "ok")
+            return redirect(url_for("auth.login"))
+
+    return render_template("auth/redefinir_senha.html", token=token)
 
 
 def _slug_unico_empresa(base):

@@ -6,7 +6,7 @@ mutação) sem depender de Flask-WTF.
 import hmac
 import secrets
 
-from flask import abort, request, session
+from flask import abort, current_app, request, session
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS", "TRACE"}
 
@@ -48,7 +48,11 @@ def apply_security_headers(response):
     response.headers.setdefault(
         "Content-Security-Policy",
         "default-src 'self'; img-src 'self' data:; "
-        "style-src 'self' 'unsafe-inline'; script-src 'self'; "
+        "style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'none'; "
         "base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
     )
+    # HSTS só faz sentido (e só é honrado) atrás de HTTPS; SESSION_COOKIE_SECURE
+    # é o sinal do operador de que o site está servido com TLS.
+    if current_app.config.get("SESSION_COOKIE_SECURE"):
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
     return response

@@ -20,13 +20,16 @@
   <p class="muted">Protege o login com um código gerado por app autenticador (Google Authenticator, Authy, etc.).</p>
   {% if current_user.mfa_ativo %}
     <p class="muted">Códigos de recuperação não usados: <strong>{{ codigos_restantes }}</strong></p>
+    <p class="muted">Por segurança, gerar novos códigos ou desativar o 2FA exige confirmar a sua senha atual.</p>
     <div class="cert-acoes">
       <form method="post" action="{{ url_for('perfil.regenerar_codigos') }}" data-confirm="Gerar novos códigos? Os antigos deixam de valer.">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="campo"><span>Senha atual</span><input type="password" name="senha" required autocomplete="current-password"></label>
         <button class="btn btn-ghost" type="submit" style="border-color:var(--borda);color:var(--primaria);">Gerar novos códigos</button>
       </form>
       <form method="post" action="{{ url_for('perfil.desativar_2fa') }}" data-confirm="Desativar a verificação em duas etapas?">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="campo"><span>Senha atual</span><input type="password" name="senha" required autocomplete="current-password"></label>
         <button class="btn btn-ghost" type="submit" style="border-color:var(--borda);color:var(--erro);">Desativar 2FA</button>
       </form>
     </div>
