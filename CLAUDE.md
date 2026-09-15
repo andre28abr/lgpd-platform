@@ -89,3 +89,17 @@ Pilar 1 (educacional) + Pilar 2 (gestão de privacidade) completos. Ciclo de aud
 segurança, hardening e melhorias de produto/conteúdo concluído em set/2026 (detalhes no
 Roadmap do README). 121 testes, 12 migrações, 229 questões, CI (ruff · pip-audit ·
 pytest 3.12/3.13 · PostgreSQL 16). Licença AGPL-3.0. Repo: https://github.com/andre28abr/lgpd-platform
+
+## Runtimes e dependências: sempre na última versão
+
+Regra do autor (2026-09): este projeto está em desenvolvimento e deve acompanhar as versões mais novas
+de runtime (Python, Node, Go, Rust, Swift) e de bibliotecas. Ao começar a mexer aqui:
+
+1. O Homebrew já foi conferido no início da sessão (hook `brew-check`). Se listou pacotes desatualizados,
+   rode `brew upgrade && brew cleanup` antes de qualquer outra coisa.
+2. Verifique se há versão nova do runtime e das dependências (`uv lock --upgrade`, `pnpm update`,
+   `npm outdated`, `cargo update`, `go get -u ./...`, conforme o projeto) e atualize os pins:
+   requirements/pyproject, package.json, Cargo.toml, go.mod, Dockerfile e a matriz do CI.
+3. Rode a suíte completa e o lint; faça push e confira o CI. **Só commite atualização com tudo verde.**
+4. Se uma dependência não acompanha a versão nova (ex.: sem wheel para o Python mais recente),
+   fique na anterior e registre o motivo nesta seção, com data.
