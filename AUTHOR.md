@@ -1,20 +1,31 @@
 # Sobre o autor
 
-## André Augusto Azarias De Souza
+## André Augusto Azarias de Souza
 
-→ [LinkedIn](https://linkedin.com/in/andreaugusto-azariasdesouza) · [GitHub](https://github.com/andre28abr) · [Profile completo](https://github.com/andre28abr)
+→ [LinkedIn](https://linkedin.com/in/andreaugusto-azariasdesouza) · [GitHub](https://github.com/andre28abr) · contato@azariasdesouza.com
 
 ---
 
-## Resumo
+## Quem é
 
-Profissional com mais de 18 anos de experiência em **gestão administrativa, compliance, governança da informação e proteção de dados pessoais**, com atuação integrada entre áreas administrativas, tecnologia da informação e conformidade regulatória.
+Gestor com **18 anos de atuação como Gerente Administrativo e Encarregado de Dados (DPO)** em organização do setor de saúde suplementar, ambiente regulado pela ANS e pela LGPD. Participou de decisões de diretoria, conduziu a relação com hospitais e operadoras, liderou a modernização dos sistemas administrativos e de segurança da informação e coordenou o programa de adequação à LGPD da organização, com dados sensíveis de saúde sob o Art. 11.
 
-Formação dupla em **Direito (Anhanguera)** e **Análise e Desenvolvimento de Sistemas (Mackenzie)**, complementada por especializações em LGPD, Direito Digital, Segurança Digital e Liderança Ágil.
+Formado em **Direito** e em **Análise e Desenvolvimento de Sistemas**, com pós-graduações em segurança digital, governança de dados, privacidade, direito digital e liderança ágil.
 
-Exerceu por quase duas décadas a função de **Gerente Administrativo e Encarregado de Dados (DPO)** em organização do setor de saúde suplementar, com atuação na organização da governança, adequação à LGPD, controle documental e apoio às áreas administrativas e tecnológicas.
+Atua na interseção entre **Compliance, GRC, privacidade e segurança da informação**: mapeamento de dados e ROPA (Art. 37), RIPD/DPIA (Art. 38), direitos do titular (Art. 18), gestão de operadores e terceiros (Art. 39), resposta a incidentes (Art. 48), interface com a ANPD, e os frameworks NIST CSF, CIS Controls e ISO/IEC 27001/27701. Trabalha com o princípio de que proteção de dados é também arquitetura: Security by Design, Zero Trust, defesa em camadas e menor privilégio.
 
-Atualmente em transição de carreira, com **disponibilidade imediata**, busca posições em DPO (Encarregado de Dados), Compliance, Governança & GRC, Privacy Engineering ou Security Analyst com viés regulatório.
+Desde 2025 conduz, como **product owner técnico**, projetos open-source de segurança e privacidade em Python, Go, Rust e Swift, com a codificação orquestrada por assistentes de IA generativa sob sua direção e revisão. Desenvolve **automações de processos com n8n** e é autor de cinco livros publicados, entre eles *Da Norma à Liderança*, sobre atualização profissional em GRC.
+
+---
+
+## Automação de processos com n8n
+
+Projeta e opera **automações de processos de negócio e jurídicos em n8n**, self-hosted em Docker Compose, com foco em privacidade: processamento local, gravação em disco restrita a pastas definidas, sem envio de dados a serviços de terceiros. Entre o que já construiu:
+
+- **Triagem automática de publicações judiciais**: busca de hora em hora no DJEN (Comunica CNJ) por OAB, classificação por urgência, cálculo de prazo provisório em dias úteis, contexto do processo via DataJud e painel web de tratamento por advogado.
+- **Onboarding de clientes**: formulário web que gera em segundos procuração, declaração de hipossuficiência e contrato de honorários em PDF (Gotenberg), com registro do cliente para os fluxos seguintes.
+- **Portal e páginas servidas pelo próprio n8n** via webhooks, instaladores para Mac e Windows, variante para servidor com HTTPS automático e autenticação (Caddy) e rotina de backup.
+- **Integrações com APIs públicas** (DJEN, DataJud, BrasilAPI) e desenho de fluxos com Code nodes, banco JSON local e controle de estado entre execuções.
 
 ---
 
@@ -22,11 +33,11 @@ Atualmente em transição de carreira, com **disponibilidade imediata**, busca p
 
 A **Plataforma LGPD** nasceu como exercício pessoal de portfólio com três objetivos:
 
-1. **Traduzir conceitos regulatórios em código.** A LGPD não é só política — é também como o sistema *implementa* o registro de operações (Art. 37), o relatório de impacto (Art. 38), o atendimento a direitos do titular (Art. 18), a resposta a incidentes (Art. 48) e a trilha de auditoria/accountability (Art. 6º, X). Este projeto força essa tradução em decisões técnicas concretas, do banco de questões ancorado em artigos até os módulos operacionais do Encarregado.
+1. **Traduzir conceitos regulatórios em código.** A LGPD não é só política, é também como o sistema *implementa* o registro de operações (Art. 37), o relatório de impacto (Art. 38), o atendimento a direitos do titular (Art. 18), a resposta a incidentes (Art. 48) e a trilha de auditoria/accountability (Art. 6º, X). Este projeto força essa tradução em decisões técnicas concretas, do banco de questões ancorado em artigos até os módulos operacionais do Encarregado.
 
-2. **Demonstrar fluência técnica suficiente pra dialogar com times de engenharia e segurança.** Um DPO que entende multi-tenancy, 2FA/TOTP, política de senha, CSP, rate limit e migrações de banco consegue conversar diretamente com a equipe técnica — sem intermediário que traduza requisitos.
+2. **Demonstrar fluência técnica suficiente pra dialogar com times de engenharia e segurança.** Um DPO que entende multi-tenancy, 2FA/TOTP, política de senha, CSP, rate limit e migrações de banco consegue conversar diretamente com a equipe técnica, sem intermediário que traduza requisitos.
 
-3. **Exercitar a orquestração de um projeto técnico com auxílio de IA generativa.** A skill emergente do mercado pós-2024 não é "decorar sintaxe" — é **definir requisitos, validar arquitetura, traduzir necessidade de negócio em especificação** e usar IA para acelerar a entrega. O projeto foi conduzido nesse modelo, com suíte de testes verde e CI.
+3. **Exercitar a orquestração de um projeto técnico com auxílio de IA generativa.** A skill emergente do mercado pós-2024 não é "decorar sintaxe", é **definir requisitos, validar arquitetura, traduzir necessidade de negócio em especificação** e usar IA para acelerar a entrega. O projeto foi conduzido nesse modelo, com suíte de testes verde e CI.
 
 ---
 
@@ -40,63 +51,26 @@ A **Plataforma LGPD** nasceu como exercício pessoal de portfólio com três obj
 - **Tradução de exigências LGPD em funcionalidades**: banco de questões e trilhas ancorados nos artigos; diagnóstico de maturidade; **ROPA (Art. 37)**; **RIPD (Art. 38)**; **direitos do titular (Art. 18)**; **incidentes (Art. 48)**; trilha de auditoria (Art. 6º, X).
 - **Curadoria do conteúdo**: trilhas por setor (RH, Financeiro, TI, Marketing…) e banco de questões com base legal e explicação.
 - **Decisões de trade-off**: SQLite *default* × Postgres-ready, 2FA opt-in × obrigatório por empresa, rate limit em memória × Redis, banco curado de questões × geração por IA.
-- **Ciclo de auditoria e hardening (set/2026)**: condução de uma auditoria completa de segurança e correção do projeto — isolamento multi-tenant, chave secreta, integridade da prova, migrações em PostgreSQL, trilha de auditoria à prova de adulteração — com decisão explícita de manter o SQLite como padrão por ser uma plataforma de demonstração, e de tornar o caminho PostgreSQL verdadeiro em vez de removê-lo. O processo (achado → correção → teste de regressão → CI) é o material de base para o e-book sobre GRC do autor.
+- **Ciclo de auditoria e hardening (set/2026)**: condução de uma auditoria completa de segurança e correção do projeto, isolamento multi-tenant, chave secreta, integridade da prova, migrações em PostgreSQL, trilha de auditoria à prova de adulteração, com decisão explícita de manter o SQLite como padrão por ser uma plataforma de demonstração, e de tornar o caminho PostgreSQL verdadeiro em vez de removê-lo. O processo (achado → correção → teste de regressão → CI) é o material de base para o e-book sobre GRC do autor.
 
 **Etapa de codificação:** orquestrada com auxílio de IA generativa, sob direção e revisão do autor. A stack (Python/Flask, SQLAlchemy, Jinja, etc.) foi escolhida pela aderência ao caso de uso e pela exposição prévia em estudos, não por domínio prático prévio em escrita de código de produção.
 
 ---
 
-## Formação relevante para o domínio
-
-### Formação acadêmica
-
-- **Bacharelado em Direito** — Anhanguera Educacional
-- **Análise e Desenvolvimento de Sistemas** — Universidade Presbiteriana Mackenzie
-
-### Pós-graduações ligadas a Privacy / Security / Tech
-
-- **Privacidade e Proteção de Dados Pessoais (LGPD)** — Faculdade Focus
-- **Direito, Inovação e Tecnologia** — Faculdade CERS
-- **Direito Digital** — Legale Educacional
-- **Segurança Digital, Governança e Gestão de Dados** — PUCRS
-
-### Certificações ligadas ao tema deste projeto
-
-- **DPO – Data Protection Officer (LGPD)** — CERS (2020)
-- **Cybersecurity Essentials** — Cisco (2022)
-- **Cibersegurança – Ameaças e Táticas de Prevenção** — FGV (2023)
-- **Crise Cibernética e Continuidade de Negócios** — FGV (2023)
-- **Fundamentos na Lei Geral de Proteção de Dados** — Certiprof Summit (2023)
-- **Data Mapping: da Teoria à Prática** — IbiJus (2023)
-- **AI for Leaders** — StartSe University (2024)
-- **Visual Law** — Legale Educacional (2023)
-
----
-
 ## Outros projetos
 
-- **[SentinelBR](https://github.com/andre28abr/SentinelBR-platform)** *(público)* — plataforma open-source de SIEM + LGPD para servidores Linux de PMEs brasileiras: detecção em tempo real, gestão de firewall, SELinux, resposta a incidentes e compliance nativa. Python/FastAPI + Go + React.
+**[SentinelBR](https://github.com/andre28abr/SentinelBR-platform)**: plataforma open-source de **SIEM + LGPD** para PMEs brasileiras. Agente Go com gRPC e mTLS, detecção em tempo real, resposta automatizada e compliance LGPD nativa, multi-tenant. 225 testes entre servidor, agente e frontend; CI em 16 jobs.
 
-- **[VigiaOS](https://github.com/andre28abr/VigiaOS)** *(público)* — suíte de segurança, privacidade e LGPD para Fedora Workstation (GTK4 + libadwaita), com módulos de monitor, ferramentas, Red (pentest) e Blue (SOC).
+**[VigiaOS](https://github.com/andre28abr/VigiaOS)**: suíte de **segurança, privacidade e LGPD** para a estação de trabalho (Fedora Workstation, GTK4 + libadwaita), com 13 ferramentas defensivas, módulos de detecção e resposta e laboratório educacional com termo de uso. 1460 testes em Python e 28 em Rust.
 
-- **SC Platform** *(privado, sob NDA — disponível para apresentação em entrevistas mediante solicitação)* — Plataforma SaaS multi-tenant para gestão de licitações públicas brasileiras (PNCP em tempo real, simulador FSM da Lei 14.133, robô de lances, extração de PDF com IA local, gerador de propostas, CRM, Telegram). Stack: **Python 3.14 + Flask 3 + SQLAlchemy 2 + PostgreSQL 15 + Redis + Playwright + ReportLab + Manifest V3 Chrome Extension**. ~75.000 linhas, 420 testes, 30 modelos, 245 rotas, 29 migrations.
+**[Peapod](https://github.com/andre28abr/Peapod)**: sandboxes **isolados e descartáveis para agentes de IA**, dirigidos por MCP, CLI, dashboard web e app nativo de macOS: rede desligada por padrão, allowlist de domínios, trilha de auditoria. Go e Swift, distribuído por Homebrew.
 
----
+**[Uptend](https://github.com/andre28abr/Uptend)**: app nativo de macOS para **configurar e manter o Mac** e **auditar servidores Linux**: coletor portátil, relatórios, correlação com CVEs, MITRE ATT&CK, lente LGPD e playbook de hardening com rollback. Swift 6, 428 testes.
 
-## Vagas em foco
+**[banana](https://github.com/andre28abr/banana)**: editor **local-first** de notas Markdown, código e PDF, com vault cifrado (Argon2id + AES-256-GCM). Tauri 2, Rust e Svelte 5, 393 testes.
 
-- **DPO / Encarregado de Dados** (LGPD)
-- **Compliance & Governança (GRC)** — políticas, controles, mapeamento de dados
-- **Privacy Engineering** — bridge entre legal e técnico
-- **Security Analyst** com viés regulatório
-- **Consultoria em LGPD / Privacy**
-
-**Modalidades aceitas:** remoto, híbrido, presencial — Brasil.
+**SC Platform** *(privado, disponível para apresentação mediante solicitação)*: SaaS multi-tenant para gestão de licitações públicas, com PNCP em tempo real, simulador da Lei 14.133/2021, robô de lances em três modos, extração de PDF com IA local, CRM e Telegram. Cerca de 75 mil linhas e 547 testes.
 
 ---
 
-## Contato
-
-Para apresentação técnica de projetos privados (SC Platform), entrevistas, ou propostas de oportunidade, o canal de contato é o **[LinkedIn](https://linkedin.com/in/andreaugusto-azariasdesouza)**.
-
-Dados de contato direto (email, telefone) são fornecidos sob demanda durante processo seletivo, via canais formais do RH.
+→ **[LinkedIn](https://linkedin.com/in/andreaugusto-azariasdesouza)** · [GitHub](https://github.com/andre28abr)
