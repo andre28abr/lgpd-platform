@@ -25,7 +25,7 @@ Atualmente em **transição de carreira, com disponibilidade imediata**, esta pl
 
 - **[SentinelBR](https://github.com/andre28abr/SentinelBR-platform)** *(público)* — plataforma open-source de SIEM + LGPD para servidores Linux de PMEs: detecção em tempo real, firewall, SELinux, resposta a incidentes e compliance nativa.
 - **[VigiaOS](https://github.com/andre28abr/VigiaOS)** *(público)* — suíte de segurança, privacidade e LGPD para Fedora Workstation (GTK4 + libadwaita).
-- **SC Platform** *(privado, sob NDA — disponível para apresentação em entrevistas)* — SaaS multi-tenant de gestão de licitações públicas (PNCP, simulador da Lei 14.133, robô de lances, extração de PDF com IA local, CRM). ~75k linhas, 420 testes. Python 3.14 + Flask 3 + PostgreSQL + Redis.
+- **SC Platform** *(privado, sob NDA — disponível para apresentação em entrevistas)* — SaaS multi-tenant de gestão de licitações públicas (PNCP, simulador da Lei 14.133, robô de lances, extração de PDF com IA local, CRM). ~75k linhas, 547 testes. Python 3.14 + Flask 3 + PostgreSQL + Redis.
 
 ---
 
@@ -233,7 +233,7 @@ tests/            suíte pytest (121 testes, inclui isolamento multi-tenant com 
 migrations/       Alembic (12 migrações), validadas em SQLite e PostgreSQL
 ruff.toml         lint (E/F/W/I/B/BLE)
 Dockerfile · docker-compose.yml · entrypoint.sh    empacotamento (web + Postgres + Redis, healthcheck)
-.github/workflows/ci.yml                            CI: ruff · pip-audit · pytest 3.12/3.13 (cobertura ≥ 85%) · PostgreSQL 16
+.github/workflows/ci.yml                            CI: ruff · pip-audit · pytest 3.12/3.13/3.14 (cobertura ≥ 85%) · PostgreSQL 16
 ```
 
 ---
