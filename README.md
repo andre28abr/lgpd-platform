@@ -23,9 +23,13 @@ Desde 2025 conduz, como **product owner técnico**, projetos open-source de segu
 
 ### 📂 Outros projetos do autor
 
-- **[SentinelBR](https://github.com/andre28abr/SentinelBR-platform)** *(público)* — plataforma open-source de SIEM + LGPD para servidores Linux de PMEs: detecção em tempo real, firewall, SELinux, resposta a incidentes e compliance nativa.
-- **[VigiaOS](https://github.com/andre28abr/VigiaOS)** *(público)* — suíte de segurança, privacidade e LGPD para Fedora Workstation (GTK4 + libadwaita).
-- **SC Platform** *(privado, disponível para apresentação mediante solicitação)* — SaaS multi-tenant de gestão de licitações públicas (PNCP, simulador da Lei 14.133, robô de lances, extração de PDF com IA local, CRM). ~75k linhas, 547 testes. Python 3.14 + Flask 3 + PostgreSQL + Redis.
+- **[SentinelBR](https://github.com/andre28abr/SentinelBR-platform)**: plataforma open-source de SIEM + LGPD para PMEs brasileiras: agente Go com gRPC e mTLS, detecção em tempo real, resposta automatizada e compliance LGPD nativa, multi-tenant.
+- **[VigiaOS](https://github.com/andre28abr/VigiaOS)**: suíte de segurança, privacidade e LGPD para a estação de trabalho (Fedora Workstation, GTK4 + libadwaita), com 13 ferramentas defensivas, módulos de detecção e resposta e laboratório educacional.
+- **[Peapod](https://github.com/andre28abr/Peapod)**: sandboxes isolados e descartáveis para agentes de IA (MCP, CLI, dashboard web e app nativo de macOS): rede desligada por padrão, allowlist de domínios e trilha de auditoria. Go e Swift.
+- **[Uptend](https://github.com/andre28abr/Uptend)**: app nativo de macOS para configurar e manter o Mac e auditar servidores Linux: coletor portátil, relatórios, correlação com CVEs, MITRE ATT&CK, lente LGPD e playbook de hardening com rollback. Swift 6.
+- **[banana](https://github.com/andre28abr/banana)**: editor local-first de notas Markdown, código e PDF, com vault cifrado (Argon2id + AES-256-GCM). Tauri 2, Rust e Svelte 5.
+
+Todos os projetos, com o porquê de cada um, no perfil [github.com/andre28abr](https://github.com/andre28abr).
 
 ---
 
