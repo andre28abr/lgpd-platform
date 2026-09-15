@@ -19,7 +19,7 @@ Profissional com mais de 18 anos de experiência em **gestão administrativa, co
 
 Atualmente em **transição de carreira, com disponibilidade imediata**, esta plataforma foi conduzida como **product owner técnico, com auxílio de assistentes de IA generativa para a etapa de codificação** — exercitando a tradução de exigências regulatórias (LGPD) em uma plataforma funcional e demonstrando fluência técnica suficiente para dialogar com times de engenharia, segurança e privacidade.
 
-→ **[Bio completa: AUTHOR.md](AUTHOR.md)** · [LinkedIn](https://linkedin.com/in/adreaugusto-azariasdesouza) · [GitHub Profile](https://github.com/andre28abr)
+→ **[Bio completa: AUTHOR.md](AUTHOR.md)** · [LinkedIn](https://linkedin.com/in/andreaugusto-azariasdesouza) · [GitHub Profile](https://github.com/andre28abr)
 
 ### 📂 Outros projetos do autor
 
