@@ -59,7 +59,8 @@ Todos os projetos, com o porquê de cada um, no perfil [github.com/andre28abr](h
 11. [Configuração via env vars](#configuração-via-env-vars)
 12. [Métricas do código](#métricas-do-código)
 13. [Roadmap](#roadmap)
-14. [Licença](#licença)
+14. [Contribuições](#contribuições)
+15. [Licença](#licença)
 
 ---
 
@@ -353,6 +354,12 @@ verificação pública de certificados em `/certificados/verificar/<código>`.
 - **Concluído (set/2026) — ciclo de auditoria de segurança e hardening:** chave secreta nunca pública; validação de FKs cross-tenant; cronômetro no servidor; migrações funcionando em PostgreSQL; PDFs com escape; métricas sem N+1; sessão com prazo real; ProxyFix/HSTS; reautenticação no 2FA; reset de senha; auditoria encadeada por hash; CI com lint, pip-audit e Postgres.
 - **Concluído (set/2026) — produto e conteúdo:** Gestor em modo leitura no Pilar 2; caixa de saída de e-mails; seed com 2 empresas e `demo-reset`; scripts Windows/Linux; portal público do titular com protocolo; prazos vivos (dias úteis, Res. 15/2024) e KPIs; anexos como evidência; anonimização, expurgo e portabilidade da empresa; banco de 229 questões e 7 trilhas com fonte oficial; prova 7+3 balanceada; QR no certificado; trilha lida; comparativo por setor; importação do ROPA; tour por papel.
 - **Próximos passos (fora do escopo de demonstração):** e-mail transacional real (SMTP/serviço); Redis para múltiplos workers; SSO; e-mail único por empresa (hoje é global); feriados no cálculo de dias úteis.
+
+---
+
+## Contribuições
+
+Obrigado pelo interesse! Este é um projeto pessoal, mantido por uma pessoa só, e por isso não consigo revisar nem acompanhar contribuições de fora. Pedidos de alteração (pull requests) serão fechados sem análise, sem nenhuma desconsideração por quem enviou. Se quiser adaptar o projeto às suas necessidades, fique à vontade para fazer um fork, dentro dos termos da licença.
 
 ---
 
